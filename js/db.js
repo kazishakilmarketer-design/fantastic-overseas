@@ -256,17 +256,7 @@ const DB = {
     return { success: false, message: 'User not found.' };
   },
 
-  // Reset password from login screen
-  resetPassword(email, name, newPassword) {
-    const agents = this.getAgents();
-    const user = agents.find(u => u.email.toLowerCase() === email.toLowerCase() && u.name.toLowerCase() === name.toLowerCase());
-    if (user) {
-      user.password = newPassword;
-      this.saveAgents(agents);
-      return { success: true };
-    }
-    return { success: false, message: 'Invalid name or email. Credential verification failed.' };
-  },
+
 
   // Add / edit package
   addPackage(pkg) {

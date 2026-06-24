@@ -39,29 +39,10 @@
         <div id="login-error" style="color: #ef4444; font-size: 0.88rem; margin-bottom: 16px; display: none;">Invalid agent credentials.</div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
       </form>
-      <a href="#" id="link-forgot-pwd" style="display:block; text-align:center; font-size:0.82rem; color:var(--primary); margin-top:14px; text-decoration:none;">Forgot Password?</a>
-
-      <!-- Forgot Password Panel -->
-      <div id="forgot-password-container" style="display:none; margin-top:15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-        <h3 style="font-size:1rem; text-align:center; margin-bottom:15px; color:var(--text-main);">Reset Agent Password</h3>
-        <form id="forgot-password-form">
-          <div class="form-group">
-            <label>Registered Agent Name</label>
-            <input type="text" id="reset-name" class="form-control" required placeholder="E.g., Md. Karim Uddin">
-          </div>
-          <div class="form-group">
-            <label>Registered Email Address</label>
-            <input type="email" id="reset-email" class="form-control" required placeholder="karim@fantasticoverseas.com">
-          </div>
-          <div class="form-group">
-            <label>New Password</label>
-            <input type="password" id="reset-new-pwd" class="form-control" required placeholder="••••••••">
-          </div>
-          <div style="display:flex; gap:10px; margin-top:15px;">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-reset" style="flex:1;">Cancel</button>
-            <button type="submit" class="btn btn-primary btn-sm" style="flex:1;">Reset Password</button>
-          </div>
-        </form>
+      <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 14px; line-height: 1.4;">
+        Forgot your password? Please contact the Head Office Super Admin to request a password reset.
+        <br>
+        <span style="font-size: 0.75rem; color: #a0aec0;">(পাসওয়ার্ড রিসেট করতে প্রধান কার্যালয়ের সুপার অ্যাডমিনের সাথে যোগাযোগ করুন)</span>
       </div>
 
       <div style="text-align: center; margin-top: 20px;">
@@ -378,41 +359,7 @@
         }
       });
 
-      // Forgot Password UI triggers
-      const linkForgotPwd = document.getElementById('link-forgot-pwd');
-      const forgotPasswordContainer = document.getElementById('forgot-password-container');
-      const btnCancelReset = document.getElementById('btn-cancel-reset');
-      const forgotPasswordForm = document.getElementById('forgot-password-form');
 
-      linkForgotPwd.addEventListener('click', (e) => {
-        e.preventDefault();
-        loginForm.style.display = 'none';
-        linkForgotPwd.style.display = 'none';
-        loginError.style.display = 'none';
-        forgotPasswordContainer.style.display = 'block';
-      });
-
-      btnCancelReset.addEventListener('click', () => {
-        forgotPasswordContainer.style.display = 'none';
-        loginForm.style.display = 'block';
-        linkForgotPwd.style.display = 'block';
-      });
-
-      forgotPasswordForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('reset-email').value;
-        const name = document.getElementById('reset-name').value;
-        const newPwd = document.getElementById('reset-new-pwd').value;
-
-        const res = db.resetPassword(email, name, newPwd);
-        if (res.success) {
-          alert('Agent password has been successfully reset! You can now sign in with your new password.');
-          forgotPasswordForm.reset();
-          btnCancelReset.click();
-        } else {
-          alert('Error: ' + res.message);
-        }
-      });
 
       // Login form handler
       loginForm.addEventListener('submit', (e) => {

@@ -143,3 +143,15 @@ A command-based changes history and development timeline for the `fantastic over
     *   [NEW] `credentials.md` (Contains login paths and default emails/passwords for Admin and Agent tiers)
 *   **Details**: Created a documentation file in the repository root to help administrators and local operators reference defaults and custom dashboard access paths easily.
 
+---
+
+### [2026-06-24] Phase 14: Password Reset Security Remediation
+*   **Action**: Secured the portal by disabling public self-service password resets and establishing an Admin-Mediated reset workflow.
+*   **Affected Files**:
+    *   [MODIFY] `js/db.js` (Removed public `resetPassword` method)
+    *   [MODIFY] `login/admin.html` (Removed public forgot password UI/JS, added reset agent password icons and click logic under Manage Agents list)
+    *   [MODIFY] `agent.html` (Removed public forgot password UI/JS, replaced with instructional text to contact the Head Office)
+    *   [MODIFY] `credentials.md` (Updated tips block to document admin-mediated password resets)
+*   **Details**: Closed the critical security loophole where any public user knowing an agent's name/email could reset their credentials. Handled agent credential resets securely through the admin-only dashboard panel.
+
+

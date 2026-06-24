@@ -95,29 +95,10 @@
         <div id="login-error" style="color: #ef4444; font-size: 0.88rem; margin-bottom: 16px; display: none;">Invalid credentials or permission denied.</div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
       </form>
-      <a href="#" id="link-forgot-pwd" style="display:block; text-align:center; font-size:0.82rem; color:var(--primary); margin-top:14px; text-decoration:none;">Forgot Password?</a>
-
-      <!-- Forgot Password Panel -->
-      <div id="forgot-password-container" style="display:none; margin-top:15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-        <h3 style="font-size:1rem; text-align:center; margin-bottom:15px; color:var(--text-main);">Reset Admin Password</h3>
-        <form id="forgot-password-form">
-          <div class="form-group">
-            <label>Registered Admin Name</label>
-            <input type="text" id="reset-name" class="form-control" required placeholder="E.g., Super Admin">
-          </div>
-          <div class="form-group">
-            <label>Registered Email Address</label>
-            <input type="email" id="reset-email" class="form-control" required placeholder="admin@fantasticoverseas.com">
-          </div>
-          <div class="form-group">
-            <label>New Password</label>
-            <input type="password" id="reset-new-pwd" class="form-control" required placeholder="••••••••">
-          </div>
-          <div style="display:flex; gap:10px; margin-top:15px;">
-            <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-reset" style="flex:1;">Cancel</button>
-            <button type="submit" class="btn btn-primary btn-sm" style="flex:1;">Reset Password</button>
-          </div>
-        </form>
+      <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 14px; line-height: 1.4;">
+        Forgot your password? For security reasons, public recovery is disabled. Please contact system developer to recover access.
+        <br>
+        <span style="font-size: 0.75rem; color: #a0aec0;">(পাসওয়ার্ড রিসেট করতে সিস্টেম ডেভেলপারের সাথে যোগাযোগ করুন)</span>
       </div>
 
       <div style="text-align: center; margin-top: 20px;">
@@ -581,6 +562,9 @@
             <td><span class="status-badge ${badgeClass}">${a.role}</span></td>
             <td>
               ${a.role !== 'admin' ? `
+                <button class="action-btn action-btn-reset-agent" data-id="${a.id}" data-name="${a.name}" title="Reset Password" style="margin-right: 6px;">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </button>
                 <button class="action-btn action-btn-delete-agent" data-id="${a.id}">
                   <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </button>
@@ -676,41 +660,7 @@
         });
       };
 
-      // Forgot Password UI triggers
-      const linkForgotPwd = document.getElementById('link-forgot-pwd');
-      const forgotPasswordContainer = document.getElementById('forgot-password-container');
-      const btnCancelReset = document.getElementById('btn-cancel-reset');
-      const forgotPasswordForm = document.getElementById('forgot-password-form');
 
-      linkForgotPwd.addEventListener('click', (e) => {
-        e.preventDefault();
-        loginForm.style.display = 'none';
-        linkForgotPwd.style.display = 'none';
-        loginError.style.display = 'none';
-        forgotPasswordContainer.style.display = 'block';
-      });
-
-      btnCancelReset.addEventListener('click', () => {
-        forgotPasswordContainer.style.display = 'none';
-        loginForm.style.display = 'block';
-        linkForgotPwd.style.display = 'block';
-      });
-
-      forgotPasswordForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('reset-email').value;
-        const name = document.getElementById('reset-name').value;
-        const newPwd = document.getElementById('reset-new-pwd').value;
-
-        const res = db.resetPassword(email, name, newPwd);
-        if (res.success) {
-          alert('Admin password has been successfully reset! You can now sign in with your new password.');
-          forgotPasswordForm.reset();
-          btnCancelReset.click();
-        } else {
-          alert('Error: ' + res.message);
-        }
-      });
 
       // Form login handler
       loginForm.addEventListener('submit', (e) => {
@@ -854,6 +804,7 @@
       document.addEventListener('click', (e) => {
         const btnDelPkg = e.target.closest('.action-btn-delete-pkg');
         const btnDelAgent = e.target.closest('.action-btn-delete-agent');
+        const btnResetAgent = e.target.closest('.action-btn-reset-agent');
         const btnDelGal = e.target.closest('.action-btn-delete-gal');
         const btnApprove = e.target.closest('.action-btn-approve');
 
@@ -867,6 +818,27 @@
           if (confirm('Delete this agent?')) {
             db.deleteAgent(btnDelAgent.getAttribute('data-id'));
             refreshDashboard();
+          }
+        }
+        if (btnResetAgent) {
+          const agentId = btnResetAgent.getAttribute('data-id');
+          const agentName = btnResetAgent.getAttribute('data-name');
+          const newPassword = prompt(`Enter a new password for Agent "${agentName}":`);
+          if (newPassword !== null) {
+            const cleanPwd = newPassword.trim();
+            if (cleanPwd.length < 4) {
+              alert('Error: Password must be at least 4 characters long.');
+            } else {
+              const agents = db.getAgents();
+              const agent = agents.find(a => a.id === agentId);
+              if (agent) {
+                agent.password = cleanPwd;
+                db.saveAgents(agents);
+                alert(`Password for Agent "${agentName}" has been successfully updated!`);
+              } else {
+                alert('Error: Agent not found.');
+              }
+            }
           }
         }
         if (btnDelGal) {

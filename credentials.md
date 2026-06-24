@@ -31,4 +31,4 @@ Used by agency representatives to enlist new candidate files, update applicant v
 ---
 
 > [!TIP]
-> Both Administrators and Agents can update their email addresses and passwords dynamically inside their respective dashboards via the **Settings** panel, or trigger a self-managed password recovery using the **Forgot Password** prompt on the login screen.
+> Both Administrators and Agents can update their email addresses and passwords dynamically inside their respective dashboards via the **Settings** panel. For security reasons, public self-service password recovery is disabled. If an Agent forgets their password, they must contact the Super Admin to request a password reset. If the Super Admin forgets their password, they must recover it by updating the database configuration.
