@@ -123,3 +123,15 @@ A command-based changes history and development timeline for the `fantastic over
     *   [MODIFY] Entire repository base (pushed to `https://github.com/kazishakilmarketer-design/fantastic-overseas` on branch `main`)
 *   **Details**: Reset repository tracking to clear template residuals and staged the final rebranded code files. Successfully committed and pushed branch updates.
 
+---
+
+### [2026-06-24] Phase 12: Authentication Path Hiding & Credential Modifiers
+*   **Action**: Relocated the Admin Dashboard to a hidden subfolder path (`login/admin.html`), redirected default website login to the Agent portal, and implemented self-managed password resets/credential updates.
+*   **Affected Files**:
+    *   [DELETE] `admin.html` (Relocated to subfolder)
+    *   [NEW] `login/admin.html` (Updated relative stylesheet, back links, and script paths for subfolder structure)
+    *   [MODIFY] `index.html`, `about.html`, `services.html`, `mission.html`, `message.html`, `gallery.html`, `contact.html`, `verify.html` (Pointed primary navigation "Login" link targets to `agent.html` dashboard)
+    *   [MODIFY] `agent.html`, `login/admin.html` (Added "Forgot Password?" identity-verification modal/form and "Settings" credentials modification forms)
+    *   [MODIFY] `js/db.js` (Added `updateCredentials` and `resetPassword` methods protecting database data)
+*   **Details**: Set up a custom URL mapping structure to keep administrative entries obscured from public traffic while giving agents and administrators full autonomy to manage passwords and emails safely inside their portals.
+

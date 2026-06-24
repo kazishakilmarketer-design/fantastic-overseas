@@ -232,6 +232,41 @@ const DB = {
   logout() {
     localStorage.removeItem(this.KEYS.CURRENT_USER);
   },
+  
+  // Update credentials inside dashboard
+  updateCredentials(userId, email, password) {
+    const agents = this.getAgents();
+    const user = agents.find(u => u.id === userId);
+    if (user) {
+      const isEmailTaken = agents.some(u => u.email.toLowerCase() === email.toLowerCase() && u.id !== userId);
+      if (isEmailTaken) {
+        return { success: false, message: 'Email address is already in use by another user.' };
+      }
+      user.email = email;
+      user.password = password;
+      this.saveAgents(agents);
+      
+      const curUser = this.getCurrentUser();
+      if (curUser && curUser.id === userId) {
+        curUser.email = email;
+        localStorage.setItem(this.KEYS.CURRENT_USER, JSON.stringify(curUser));
+      }
+      return { success: true };
+    }
+    return { success: false, message: 'User not found.' };
+  },
+
+  // Reset password from login screen
+  resetPassword(email, name, newPassword) {
+    const agents = this.getAgents();
+    const user = agents.find(u => u.email.toLowerCase() === email.toLowerCase() && u.name.toLowerCase() === name.toLowerCase());
+    if (user) {
+      user.password = newPassword;
+      this.saveAgents(agents);
+      return { success: true };
+    }
+    return { success: false, message: 'Invalid name or email. Credential verification failed.' };
+  },
 
   // Add / edit package
   addPackage(pkg) {

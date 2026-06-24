@@ -39,6 +39,31 @@
         <div id="login-error" style="color: #ef4444; font-size: 0.88rem; margin-bottom: 16px; display: none;">Invalid agent credentials.</div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
       </form>
+      <a href="#" id="link-forgot-pwd" style="display:block; text-align:center; font-size:0.82rem; color:var(--primary); margin-top:14px; text-decoration:none;">Forgot Password?</a>
+
+      <!-- Forgot Password Panel -->
+      <div id="forgot-password-container" style="display:none; margin-top:15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+        <h3 style="font-size:1rem; text-align:center; margin-bottom:15px; color:var(--text-main);">Reset Agent Password</h3>
+        <form id="forgot-password-form">
+          <div class="form-group">
+            <label>Registered Agent Name</label>
+            <input type="text" id="reset-name" class="form-control" required placeholder="E.g., Md. Karim Uddin">
+          </div>
+          <div class="form-group">
+            <label>Registered Email Address</label>
+            <input type="email" id="reset-email" class="form-control" required placeholder="karim@fantasticoverseas.com">
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" id="reset-new-pwd" class="form-control" required placeholder="••••••••">
+          </div>
+          <div style="display:flex; gap:10px; margin-top:15px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-cancel-reset" style="flex:1;">Cancel</button>
+            <button type="submit" class="btn btn-primary btn-sm" style="flex:1;">Reset Password</button>
+          </div>
+        </form>
+      </div>
+
       <div style="text-align: center; margin-top: 20px;">
         <a href="index.html" style="font-size:0.85rem; color:var(--text-muted);">← Back to Website</a>
       </div>
@@ -58,6 +83,10 @@
         <button class="db-nav-link" data-tab="tab-update-status">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
           Update Status Steps
+        </button>
+        <button class="db-nav-link" data-tab="tab-settings">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          Agent Settings
         </button>
         <button class="db-nav-link" id="btn-logout" style="margin-top: auto; color: #f87171;">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -228,6 +257,27 @@
 
             <button type="submit" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 20px;">Save Step Updates</button>
           </form>
+      </section>
+
+      <!-- Tab: Settings (Security & Credentials) -->
+      <section id="tab-settings" class="db-tab-pane" style="display: none;">
+        <div class="db-card" style="max-width: 600px;">
+          <h2 style="font-size: 1.25rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Modify Agent Credentials</h2>
+          <form id="form-update-credentials">
+            <div class="form-group">
+              <label>Agent Email Address</label>
+              <input type="email" id="settings-email" class="form-control" required placeholder="E.g., agent@fantasticoverseas.com">
+            </div>
+            <div class="form-group">
+              <label>New Password</label>
+              <input type="password" id="settings-new-pwd" class="form-control" required placeholder="••••••••">
+            </div>
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <input type="password" id="settings-confirm-pwd" class="form-control" required placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm" style="margin-top: 10px;">Update Credentials</button>
+          </form>
         </div>
       </section>
     </main>
@@ -261,6 +311,7 @@
           dashboardContainer.style.display = 'grid';
           userDisplayName.innerText = user.name;
           document.getElementById('avatar-letters').innerText = user.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+          document.getElementById('settings-email').value = user.email || '';
           refreshDashboard();
         } else {
           loginContainer.style.display = 'flex';
@@ -327,6 +378,42 @@
         }
       });
 
+      // Forgot Password UI triggers
+      const linkForgotPwd = document.getElementById('link-forgot-pwd');
+      const forgotPasswordContainer = document.getElementById('forgot-password-container');
+      const btnCancelReset = document.getElementById('btn-cancel-reset');
+      const forgotPasswordForm = document.getElementById('forgot-password-form');
+
+      linkForgotPwd.addEventListener('click', (e) => {
+        e.preventDefault();
+        loginForm.style.display = 'none';
+        linkForgotPwd.style.display = 'none';
+        loginError.style.display = 'none';
+        forgotPasswordContainer.style.display = 'block';
+      });
+
+      btnCancelReset.addEventListener('click', () => {
+        forgotPasswordContainer.style.display = 'none';
+        loginForm.style.display = 'block';
+        linkForgotPwd.style.display = 'block';
+      });
+
+      forgotPasswordForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('reset-email').value;
+        const name = document.getElementById('reset-name').value;
+        const newPwd = document.getElementById('reset-new-pwd').value;
+
+        const res = db.resetPassword(email, name, newPwd);
+        if (res.success) {
+          alert('Agent password has been successfully reset! You can now sign in with your new password.');
+          forgotPasswordForm.reset();
+          btnCancelReset.click();
+        } else {
+          alert('Error: ' + res.message);
+        }
+      });
+
       // Login form handler
       loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -361,7 +448,8 @@
           // Update header title text
           const titles = {
             'tab-register-client': 'Register Candidate',
-            'tab-update-status': 'Update Status Steps'
+            'tab-update-status': 'Update Status Steps',
+            'tab-settings': 'Agent Settings'
           };
           document.getElementById('db-title-text').innerText = titles[targetTab];
         });
@@ -425,6 +513,32 @@
         formUpdateStatus.reset();
         refreshDashboard();
         alert('Candidate visa step successfully updated!');
+      });
+
+      // Form: Update Credentials
+      const formUpdateCredentials = document.getElementById('form-update-credentials');
+      formUpdateCredentials.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('settings-email').value;
+        const newPwd = document.getElementById('settings-new-pwd').value;
+        const confirmPwd = document.getElementById('settings-confirm-pwd').value;
+
+        if (newPwd !== confirmPwd) {
+          alert('Error: Passwords do not match.');
+          return;
+        }
+
+        const user = db.getCurrentUser();
+        if (user) {
+          const res = db.updateCredentials(user.id, email, newPwd);
+          if (res.success) {
+            alert('Your credentials have been successfully updated!');
+            formUpdateCredentials.reset();
+            checkSession();
+          } else {
+            alert('Error: ' + res.message);
+          }
+        }
       });
 
       // Session startup check
