@@ -135,3 +135,11 @@ A command-based changes history and development timeline for the `fantastic over
     *   [MODIFY] `js/db.js` (Added `updateCredentials` and `resetPassword` methods protecting database data)
 *   **Details**: Set up a custom URL mapping structure to keep administrative entries obscured from public traffic while giving agents and administrators full autonomy to manage passwords and emails safely inside their portals.
 
+---
+
+### [2026-06-24] Phase 13: Credentials Documentation
+*   **Action**: Authored a reference credentials file for portal access configurations.
+*   **Affected Files**:
+    *   [NEW] `credentials.md` (Contains login paths and default emails/passwords for Admin and Agent tiers)
+*   **Details**: Created a documentation file in the repository root to help administrators and local operators reference defaults and custom dashboard access paths easily.
+
