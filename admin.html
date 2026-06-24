@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Fantastic Overseas</title>
+  <link rel="stylesheet" href="css/index.css">
+  <style>
+    /* Modal styles */
+    .db-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(2, 6, 17, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .db-modal-content {
+      background-color: var(--bg-surface);
+      border-radius: var(--border-radius);
+      padding: 40px;
+      width: 100%;
+      max-width: 550px;
+      box-shadow: var(--shadow-xl);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .badge-admin { background-color: #fee2e2; color: #ef4444; }
+    .badge-agent { background-color: #dbeafe; color: #2563eb; }
+
+    /* Admin Gallery styles */
+    .admin-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .admin-gallery-card {
+      background-color: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-sm);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .admin-gallery-thumb {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+    .admin-gallery-info {
+      padding: 10px;
+      font-size: 0.8rem;
+      flex-grow: 1;
+      color: var(--text-muted);
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Login Screen -->
+  <div id="login-container" class="login-card-wrapper" style="display: flex;">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-container" style="justify-content: center; margin-bottom: 20px;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="logo-icon">
+            <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <div class="logo-brand" style="text-align: left;">
+            <div class="logo-text">
+              <span class="logo-fantastic">FANTASTIC</span>
+              <span class="logo-overseas">OVERSEAS</span>
+            </div>
+            <div class="logo-license">RL 2814</div>
+          </div>
+        </div>
+      </div>
+      
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" class="form-control" placeholder="E.g., admin@fantasticoverseas.com" required>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+        </div>
+        <div id="login-error" style="color: #ef4444; font-size: 0.88rem; margin-bottom: 16px; display: none;">Invalid credentials or permission denied.</div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+      </form>
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="index.html" style="font-size:0.85rem; color:var(--text-muted);">← Back to Website</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Panel -->
+  <div id="dashboard-container" class="db-wrapper" style="display: none;">
+    <!-- Sidebar Navigation -->
+    <aside class="db-sidebar">
+      <div class="db-logo">Fantastic<span>Admin</span></div>
+      <nav class="db-nav">
+        <button class="db-nav-link active" data-tab="tab-packages">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          Manage Packages
+        </button>
+        <button class="db-nav-link" data-tab="tab-agents">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          Manage Agents
+        </button>
+        <button class="db-nav-link" data-tab="tab-pages">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          Edit Pages Content
+        </button>
+        <button class="db-nav-link" data-tab="tab-gallery">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          Manage Gallery
+        </button>
+        <button class="db-nav-link" data-tab="tab-approvals">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          Pending Approvals
+        </button>
+        <button class="db-nav-link" data-tab="tab-clients">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          Track All Candidates
+        </button>
+        <button class="db-nav-link" id="btn-logout" style="margin-top: auto; color: #f87171;">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Logout
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="db-content">
+      <header class="db-header">
+        <h1 id="db-title-text">Manage Packages</h1>
+        <div class="db-user-info">
+          <div class="db-avatar" id="avatar-letters">SA</div>
+          <span id="user-display-name">Super Admin</span>
+        </div>
+      </header>
+
+      <!-- Stats Grid -->
+      <div class="db-stats-grid">
+        <div class="db-stat-card">
+          <div class="db-stat-title">Total Packages</div>
+          <div class="db-stat-val" id="stat-packages">0</div>
+        </div>
+        <div class="db-stat-card">
+          <div class="db-stat-title">Total Agents</div>
+          <div class="db-stat-val" id="stat-agents">0</div>
+        </div>
+        <div class="db-stat-card">
+          <div class="db-stat-title">Verified Candidates</div>
+          <div class="db-stat-val" id="stat-clients">0</div>
+        </div>
+        <div class="db-stat-card">
+          <div class="db-stat-title">Pending Approvals</div>
+          <div class="db-stat-val" id="stat-approvals" style="color: var(--secondary);">0</div>
+        </div>
+      </div>
+
+      <!-- Tab: Packages -->
+      <section id="tab-packages" class="db-tab-pane">
+        <div class="db-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="font-size: 1.25rem;">Offered Packages List</h2>
+            <button class="btn btn-primary btn-sm" id="btn-add-pkg">+ Add New Package</button>
+          </div>
+          <div class="db-table-wrapper">
+            <table class="db-table">
+              <thead>
+                <tr>
+                  <th>Title (EN)</th>
+                  <th>Title (BN)</th>
+                  <th>Price (EN)</th>
+                  <th>Price (BN)</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="packages-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab: Agents -->
+      <section id="tab-agents" class="db-tab-pane" style="display: none;">
+        <div class="db-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="font-size: 1.25rem;">Registered Agents List</h2>
+            <button class="btn btn-primary btn-sm" id="btn-add-agent">+ Add New Agent</button>
+          </div>
+          <div class="db-table-wrapper">
+            <table class="db-table">
+              <thead>
+                <tr>
+                  <th>Agent Name</th>
+                  <th>Email</th>
+                  <th>Role Badge</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="agents-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab: Edit Pages Content (About & Message) -->
+      <section id="tab-pages" class="db-tab-pane" style="display: none;">
+        <!-- Edit About Page -->
+        <div class="db-card">
+          <h2 style="font-size: 1.25rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Edit About Page Content</h2>
+          <form id="form-edit-about">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="form-group">
+                <label>About Heading (English)</label>
+                <input type="text" id="about-title-en" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label>About Heading (Bengali)</label>
+                <input type="text" id="about-title-bn" class="form-control" required>
+              </div>
+              <div class="form-group" style="grid-column: span 2;">
+                <label>Paragraph 1 (English)</label>
+                <textarea id="about-desc1-en" class="form-control" style="min-height: 80px;" required></textarea>
+              </div>
+              <div class="form-group" style="grid-column: span 2;">
+                <label>Paragraph 1 (Bengali)</label>
+                <textarea id="about-desc1-bn" class="form-control" style="min-height: 80px;" required></textarea>
+              </div>
+              <div class="form-group" style="grid-column: span 2;">
+                <label>Paragraph 2 (English)</label>
+                <textarea id="about-desc2-en" class="form-control" style="min-height: 80px;" required></textarea>
+              </div>
+              <div class="form-group" style="grid-column: span 2;">
+                <label>Paragraph 2 (Bengali)</label>
+                <textarea id="about-desc2-bn" class="form-control" style="min-height: 80px;" required></textarea>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm" style="margin-top: 10px;">Save About Page</button>
+          </form>
+        </div>
+
+        <!-- Edit Messages/Leadership -->
+        <div class="db-card">
+          <h2 style="font-size: 1.25rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Edit Director's Message</h2>
+          <form id="form-edit-messages">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <!-- Director Info -->
+              <div style="grid-column: span 2;"><h3 style="font-size: 1.05rem; color: var(--primary-light);">Director's Message Section</h3></div>
+              <div class="form-group">
+                <label>Director Name</label>
+                <input type="text" id="director-name" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label>Director Photo URL</label>
+                <input type="text" id="director-photo" class="form-control" required>
+              </div>
+              <div class="form-group" style="grid-column: span 2;">
+                <label>Director Quote (English)</label>
+                <textarea id="director-quote-en" class="form-control" style="min-height: 80px;" required></textarea>
+              </div>
+              <div class="form-group" style="grid-column: span 2;">
+                <label>Director Quote (Bengali)</label>
+                <textarea id="director-quote-bn" class="form-control" style="min-height: 80px;" required></textarea>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm" style="margin-top: 20px;">Save Director's Message</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Tab: Gallery Management -->
+      <section id="tab-gallery" class="db-tab-pane" style="display: none;">
+        <div class="db-card">
+          <h2 style="font-size: 1.25rem; margin-bottom: 20px;">Add Image to Media Gallery</h2>
+          <form id="form-add-gallery" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+              <label>Image Source URL</label>
+              <input type="url" id="gal-img-url" class="form-control" required placeholder="E.g., https://images.unsplash.com/photo-...">
+            </div>
+            <div class="form-group">
+              <label>Alternative Text (Alt/Description)</label>
+              <input type="text" id="gal-img-alt" class="form-control" required placeholder="E.g., Successful candidate groups orientation">
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm" style="grid-column: span 2;">Upload and Save Image</button>
+          </form>
+        </div>
+
+        <div class="db-card">
+          <h2 style="font-size: 1.25rem; margin-bottom: 20px;">Manage Gallery Items</h2>
+          <div class="admin-gallery-grid" id="admin-gallery-container">
+            <!-- Loaded dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab: Pending Approvals -->
+      <section id="tab-approvals" class="db-tab-pane" style="display: none;">
+        <div class="db-card">
+          <h2 style="font-size: 1.25rem; margin-bottom: 20px;">Review Candidate Files & Approve</h2>
+          <div class="db-table-wrapper">
+            <table class="db-table">
+              <thead>
+                <tr>
+                  <th>Candidate Name</th>
+                  <th>Passport & Phone</th>
+                  <th>Trade / Position</th>
+                  <th>Assigned Agent</th>
+                  <th>Payment Status</th>
+                  <th>Document Submission</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="approvals-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab: Clients Tracking -->
+      <section id="tab-clients" class="db-tab-pane" style="display: none;">
+        <div class="db-card">
+          <h2 style="font-size: 1.25rem; margin-bottom: 20px;">All Enrolled Candidates</h2>
+          <div class="db-table-wrapper">
+            <table class="db-table">
+              <thead>
+                <tr>
+                  <th>Candidate Name</th>
+                  <th>Passport & Phone</th>
+                  <th>Trade / Position</th>
+                  <th>Payment Status</th>
+                  <th>Approval Status</th>
+                  <th>Current Step</th>
+                  <th>Assigned Agent</th>
+                </tr>
+              </thead>
+              <tbody id="clients-table-body">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal: Add Package -->
+  <div id="modal-pkg" class="db-modal">
+    <div class="db-modal-content">
+      <h2 style="font-size: 1.35rem; margin-bottom: 24px;">Create Offered Package</h2>
+      <form id="form-add-pkg">
+        <div class="form-group">
+          <label>Title (English)</label>
+          <input type="text" id="pkg-title-en" class="form-control" required placeholder="E.g., Skilled Work Permit">
+        </div>
+        <div class="form-group">
+          <label>Title (Bengali)</label>
+          <input type="text" id="pkg-title-bn" class="form-control" required placeholder="যেমন: দক্ষ কাজের পারমিট">
+        </div>
+        <div class="form-group">
+          <label>Description (English)</label>
+          <textarea id="pkg-desc-en" class="form-control" required placeholder="Describe recruitment details..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Description (Bengali)</label>
+          <textarea id="pkg-desc-bn" class="form-control" required placeholder="প্যাকেজের বর্ণনা লিখুন..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Price (English)</label>
+          <input type="text" id="pkg-price-en" class="form-control" required placeholder="E.g., ৳ 45,000">
+        </div>
+        <div class="form-group">
+          <label>Price (Bengali)</label>
+          <input type="text" id="pkg-price-bn" class="form-control" required placeholder="যেমন: ৳ ৪৫,০০০">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-close-pkg-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Add Package</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Agent -->
+  <div id="modal-agent" class="db-modal">
+    <div class="db-modal-content">
+      <h2 style="font-size: 1.35rem; margin-bottom: 24px;">Register New Agent</h2>
+      <form id="form-add-agent">
+        <div class="form-group">
+          <label>Agent Full Name</label>
+          <input type="text" id="agent-name" class="form-control" required placeholder="E.g., Md. Karim Uddin">
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="agent-email" class="form-control" required placeholder="E.g., agent@fantasticoverseas.com">
+        </div>
+        <div class="form-group">
+          <label>Secret Password</label>
+          <input type="password" id="agent-pwd" class="form-control" required placeholder="••••••••">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-close-agent-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Register Agent</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/db.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!window.FO_DB) return;
+
+      const db = window.FO_DB;
+
+      // DOM Handles
+      const loginContainer = document.getElementById('login-container');
+      const dashboardContainer = document.getElementById('dashboard-container');
+      const loginForm = document.getElementById('login-form');
+      const loginError = document.getElementById('login-error');
+      
+      const userDisplayName = document.getElementById('user-display-name');
+      const statPackages = document.getElementById('stat-packages');
+      const statAgents = document.getElementById('stat-agents');
+      const statClients = document.getElementById('stat-clients');
+
+      // Modals
+      const modalPkg = document.getElementById('modal-pkg');
+      const modalAgent = document.getElementById('modal-agent');
+      const formAddPkg = document.getElementById('form-add-pkg');
+      const formAddAgent = document.getElementById('form-add-agent');
+
+      // Edit Content Form Inputs
+      const formEditAbout = document.getElementById('form-edit-about');
+      const formEditMessages = document.getElementById('form-edit-messages');
+      const formAddGallery = document.getElementById('form-add-gallery');
+
+      // Verify Session helper
+      const checkSession = () => {
+        const user = db.getCurrentUser();
+        if (user && user.role === 'admin') {
+          loginContainer.style.display = 'none';
+          dashboardContainer.style.display = 'grid';
+          userDisplayName.innerText = user.name;
+          document.getElementById('avatar-letters').innerText = user.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+          
+          // Pre-fill editable content inputs
+          loadEditFormsData();
+          refreshDashboard();
+        } else {
+          loginContainer.style.display = 'flex';
+          dashboardContainer.style.display = 'none';
+        }
+      };
+
+      // Load Seed About & Message states into forms
+      const loadEditFormsData = () => {
+        const about = db.getAbout();
+        document.getElementById('about-title-en').value = about.titleEn || '';
+        document.getElementById('about-title-bn').value = about.titleBn || '';
+        document.getElementById('about-desc1-en').value = about.desc1En || '';
+        document.getElementById('about-desc1-bn').value = about.desc1Bn || '';
+        document.getElementById('about-desc2-en').value = about.desc2En || '';
+        document.getElementById('about-desc2-bn').value = about.desc2Bn || '';
+
+        const msg = db.getMessages();
+        document.getElementById('director-name').value = msg.directorName || '';
+        document.getElementById('director-photo').value = msg.directorPhoto || '';
+        document.getElementById('director-quote-en').value = msg.directorQuoteEn || '';
+        document.getElementById('director-quote-bn').value = msg.directorQuoteBn || '';
+      };
+
+      // Refresh data renders
+      const refreshDashboard = () => {
+        const pkgs = db.getPackages();
+        const agents = db.getAgents();
+        const clients = db.getClients();
+        const gallery = db.getGallery();
+
+        statPackages.innerText = pkgs.length;
+        statAgents.innerText = agents.filter(a => a.role === 'agent').length;
+        statClients.innerText = clients.filter(c => c.approved).length;
+        document.getElementById('stat-approvals').innerText = clients.filter(c => !c.approved).length;
+
+        // Render Packages Table
+        const pkgTbody = document.getElementById('packages-table-body');
+        pkgTbody.innerHTML = '';
+        pkgs.forEach(pkg => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${pkg.titleEn}</strong></td>
+            <td>${pkg.titleBn}</td>
+            <td>${pkg.priceEn}</td>
+            <td>${pkg.priceBn}</td>
+            <td>
+              <button class="action-btn action-btn-delete-pkg" data-id="${pkg.id}">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </td>
+          `;
+          pkgTbody.appendChild(tr);
+        });
+
+        // Render Agents Table
+        const agentsTbody = document.getElementById('agents-table-body');
+        agentsTbody.innerHTML = '';
+        agents.forEach(a => {
+          const tr = document.createElement('tr');
+          const badgeClass = a.role === 'admin' ? 'badge-admin' : 'badge-agent';
+          tr.innerHTML = `
+            <td><strong>${a.name}</strong></td>
+            <td>${a.email}</td>
+            <td><span class="status-badge ${badgeClass}">${a.role}</span></td>
+            <td>
+              ${a.role !== 'admin' ? `
+                <button class="action-btn action-btn-delete-agent" data-id="${a.id}">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              ` : '-'}
+            </td>
+          `;
+          agentsTbody.appendChild(tr);
+        });
+
+        // Render All Candidates Table
+        const clientsTbody = document.getElementById('clients-table-body');
+        clientsTbody.innerHTML = '';
+        clients.forEach(c => {
+          const tr = document.createElement('tr');
+          const agentName = agents.find(a => a.id === c.agentId)?.name || 'Direct';
+          const approvalBadge = c.approved 
+            ? `<span class="status-badge" style="background-color: #d1fae5; color: #065f46; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 600;">Approved</span>` 
+            : `<span class="status-badge" style="background-color: #fef3c7; color: #92400e; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 600;">Pending Approval</span>`;
+          
+          const phoneNum = c.phone || 'N/A';
+          const tradeVal = c.trade || 'N/A';
+          const paymentText = `৳${(c.amountPaid || 0).toLocaleString()} / ৳${(c.totalCost || 0).toLocaleString()}`;
+
+          tr.innerHTML = `
+            <td><strong>${c.name}</strong></td>
+            <td><code>${c.passport.toUpperCase()}</code><br><span style="font-size:0.75rem; color:var(--text-muted);">${phoneNum}</span></td>
+            <td>${tradeVal}</td>
+            <td><span style="font-size:0.85rem; font-weight:600; color:var(--primary);">${paymentText}</span></td>
+            <td>${approvalBadge}</td>
+            <td><span class="status-badge step-${c.statusStep}">Step ${c.statusStep}</span></td>
+            <td><strong>${agentName}</strong></td>
+          `;
+          clientsTbody.appendChild(tr);
+        });
+
+        // Render Pending Approvals Table
+        const approvalsTbody = document.getElementById('approvals-table-body');
+        approvalsTbody.innerHTML = '';
+        const pendingClients = clients.filter(c => !c.approved);
+        
+        if (pendingClients.length === 0) {
+          approvalsTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:30px;">No pending client approvals.</td></tr>`;
+        } else {
+          pendingClients.forEach(c => {
+            const tr = document.createElement('tr');
+            const agentName = agents.find(a => a.id === c.agentId)?.name || 'Direct';
+            const phoneNum = c.phone || 'N/A';
+            const tradeVal = c.trade || 'N/A';
+            
+            // Payment visual bar
+            const pct = c.totalCost ? Math.round((c.amountPaid / c.totalCost) * 100) : 0;
+            const payBar = `
+              <div style="font-size: 0.8rem; font-weight: 600; color: var(--primary); margin-bottom: 4px;">৳${(c.amountPaid || 0).toLocaleString()} / ৳${(c.totalCost || 0).toLocaleString()} (${pct}%)</div>
+              <div style="width: 100%; background: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden;">
+                <div style="background: var(--primary-light); height: 100%; width: ${pct}%"></div>
+              </div>
+            `;
+            
+            // Document checkboxes
+            const docList = (c.documents || []).length > 0
+              ? c.documents.map(d => `<span style="display:inline-block; font-size:0.72rem; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; padding:2px 6px; border-radius:4px; margin:2px;">✓ ${d}</span>`).join(' ')
+              : `<span style="font-size:0.75rem; color:#ef4444; font-weight:600;">No Documents</span>`;
+
+            tr.innerHTML = `
+              <td><strong>${c.name}</strong></td>
+              <td><code>${c.passport.toUpperCase()}</code><br><span style="font-size:0.75rem; color:var(--text-muted);">${phoneNum}</span></td>
+              <td>${tradeVal}</td>
+              <td><strong>${agentName}</strong></td>
+              <td><div style="min-width: 140px;">${payBar}</div></td>
+              <td><div style="max-width: 250px; display:flex; flex-wrap:wrap;">${docList}</div></td>
+              <td>
+                <button class="btn btn-primary btn-sm action-btn-approve" data-passport="${c.passport}" style="padding:6px 12px; font-size:0.75rem;">
+                  Approve & Verify
+                </button>
+              </td>
+            `;
+            approvalsTbody.appendChild(tr);
+          });
+        }
+
+        // Render Gallery management Cards
+        const galContainer = document.getElementById('admin-gallery-container');
+        galContainer.innerHTML = '';
+        gallery.forEach(img => {
+          const div = document.createElement('div');
+          div.className = 'admin-gallery-card';
+          div.innerHTML = `
+            <img class="admin-gallery-thumb" src="${img.src}" alt="${img.alt}">
+            <div class="admin-gallery-info">${img.alt.substring(0,40)}${img.alt.length > 40 ? '...' : ''}</div>
+            <button class="btn btn-accent btn-sm action-btn-delete-gal" data-id="${img.id}" style="border-radius:0; width:100%;">Delete</button>
+          `;
+          galContainer.appendChild(div);
+        });
+      };
+
+      // Form login handler
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        const user = db.login(email, password);
+        if (user && user.role === 'admin') {
+          loginError.style.display = 'none';
+          checkSession();
+        } else {
+          loginError.style.display = 'block';
+        }
+      });
+
+      // Logout handler
+      document.getElementById('btn-logout').addEventListener('click', () => {
+        db.logout();
+        checkSession();
+      });
+
+      // Tab switcher links logic
+      document.querySelectorAll('.db-nav-link[data-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.db-nav-link[data-tab]').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.db-tab-pane').forEach(t => t.style.display = 'none');
+
+          btn.classList.add('active');
+          const targetTab = btn.getAttribute('data-tab');
+          document.getElementById(targetTab).style.display = 'block';
+
+          const titles = {
+            'tab-packages': 'Manage Packages',
+            'tab-agents': 'Manage Agents',
+            'tab-pages': 'Edit Pages Content',
+            'tab-gallery': 'Manage Gallery',
+            'tab-approvals': 'Pending Approvals',
+            'tab-clients': 'Track All Candidates'
+          };
+          document.getElementById('db-title-text').innerText = titles[targetTab];
+        });
+      });
+
+      // Show Add modal popups
+      document.getElementById('btn-add-pkg').addEventListener('click', () => modalPkg.style.display = 'flex');
+      document.getElementById('btn-add-agent').addEventListener('click', () => modalAgent.style.display = 'flex');
+
+      // Close modal buttons
+      document.getElementById('btn-close-pkg-modal').addEventListener('click', () => modalPkg.style.display = 'none');
+      document.getElementById('btn-close-agent-modal').addEventListener('click', () => modalAgent.style.display = 'none');
+
+      // Form: Save About Page content
+      formEditAbout.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const titleEn = document.getElementById('about-title-en').value;
+        const titleBn = document.getElementById('about-title-bn').value;
+        const desc1En = document.getElementById('about-desc1-en').value;
+        const desc1Bn = document.getElementById('about-desc1-bn').value;
+        const desc2En = document.getElementById('about-desc2-en').value;
+        const desc2Bn = document.getElementById('about-desc2-bn').value;
+
+        db.saveAbout({ titleEn, titleBn, desc1En, desc1Bn, desc2En, desc2Bn });
+        alert('About page contents updated successfully!');
+      });
+
+      // Form: Save Leadership Message Quotes
+      formEditMessages.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const dirName = document.getElementById('director-name').value;
+        const dirPhoto = document.getElementById('director-photo').value;
+        const dirQuoteEn = document.getElementById('director-quote-en').value;
+        const dirQuoteBn = document.getElementById('director-quote-bn').value;
+
+        db.saveMessages({
+          proprietorName: dirName,
+          proprietorRoleEn: 'Proprietor & Managing Director',
+          proprietorRoleBn: 'স্বত্বাধিকারী ও ব্যবস্থাপনা পরিচালক',
+          proprietorQuoteEn: dirQuoteEn,
+          proprietorQuoteBn: dirQuoteBn,
+          proprietorPhoto: dirPhoto,
+          
+          directorName: dirName,
+          directorRoleEn: 'Proprietor & Managing Director',
+          directorRoleBn: 'স্বত্বাধিকারী ও ব্যবস্থাপনা পরিচালক',
+          directorQuoteEn: dirQuoteEn,
+          directorQuoteBn: dirQuoteBn,
+          directorPhoto: dirPhoto
+        });
+        alert("Director's message updated successfully!");
+      });
+
+      // Form: Add Gallery Image
+      formAddGallery.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const src = document.getElementById('gal-img-url').value;
+        const alt = document.getElementById('gal-img-alt').value;
+
+        db.addGalleryImage({ src, alt });
+        formAddGallery.reset();
+        refreshDashboard();
+        alert('Image successfully added to gallery!');
+      });
+
+      // Handle Form Submit: Add Package
+      formAddPkg.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const titleEn = document.getElementById('pkg-title-en').value;
+        const titleBn = document.getElementById('pkg-title-bn').value;
+        const descEn = document.getElementById('pkg-desc-en').value;
+        const descBn = document.getElementById('pkg-desc-bn').value;
+        const priceEn = document.getElementById('pkg-price-en').value;
+        const priceBn = document.getElementById('pkg-price-bn').value;
+
+        db.addPackage({
+          titleEn, titleBn, descEn, descBn, priceEn, priceBn,
+          featuresEn: ['Verified Employer Companies', 'Fast Document Processing'],
+          featuresBn: ['অনুমোদিত নিয়োগকারী প্রতিষ্ঠান', 'দ্রুত ফাইল প্রসেসিং']
+        });
+
+        formAddPkg.reset();
+        modalPkg.style.display = 'none';
+        refreshDashboard();
+      });
+
+      // Handle Form Submit: Add Agent
+      formAddAgent.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('agent-name').value;
+        const email = document.getElementById('agent-email').value;
+        const password = document.getElementById('agent-pwd').value;
+
+        db.addAgent({ name, email, password });
+        formAddAgent.reset();
+        modalAgent.style.display = 'none';
+        refreshDashboard();
+      });
+
+      // Handle Delete Package, Agent, Gallery, & Approve clicks
+      document.addEventListener('click', (e) => {
+        const btnDelPkg = e.target.closest('.action-btn-delete-pkg');
+        const btnDelAgent = e.target.closest('.action-btn-delete-agent');
+        const btnDelGal = e.target.closest('.action-btn-delete-gal');
+        const btnApprove = e.target.closest('.action-btn-approve');
+
+        if (btnDelPkg) {
+          if (confirm('Delete this package?')) {
+            db.deletePackage(btnDelPkg.getAttribute('data-id'));
+            refreshDashboard();
+          }
+        }
+        if (btnDelAgent) {
+          if (confirm('Delete this agent?')) {
+            db.deleteAgent(btnDelAgent.getAttribute('data-id'));
+            refreshDashboard();
+          }
+        }
+        if (btnDelGal) {
+          if (confirm('Remove this photo from the gallery?')) {
+            db.deleteGalleryImage(btnDelGal.getAttribute('data-id'));
+            refreshDashboard();
+          }
+        }
+        if (btnApprove) {
+          const passport = btnApprove.getAttribute('data-passport');
+          if (confirm('Verify and approve this candidate file? This will make their tracking portal active.')) {
+            db.approveClient(passport);
+            refreshDashboard();
+            alert('Candidate file approved and verified successfully!');
+          }
+        }
+      });
+
+      // Session startup check
+      checkSession();
+    });
+  </script>
+</body>
+</html>
