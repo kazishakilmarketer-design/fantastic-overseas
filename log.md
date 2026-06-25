@@ -154,4 +154,13 @@ A command-based changes history and development timeline for the `fantastic over
     *   [MODIFY] `credentials.md` (Updated tips block to document admin-mediated password resets)
 *   **Details**: Closed the critical security loophole where any public user knowing an agent's name/email could reset their credentials. Handled agent credential resets securely through the admin-only dashboard panel.
 
+---
+
+### [2026-06-25] Phase 15: Hero Background Reversion
+*   **Action**: Reverted homepage hero background layout to the original template's light radial gradient style.
+*   **Affected Files**:
+    *   [MODIFY] `css/index.css` (Updated `.hero`, `.hero-tag`, `.hero h1`, `.hero h1 span`, and `.hero p` selectors)
+    *   [MODIFY] `fantastic-overseas-rebranded.zip` (Re-packaged distribution zip archive)
+*   **Details**: Removed the custom dark background image `hero-bg.jpg` and restored the modern blue-purple radial gradient design for a clean, light-themed aesthetic. Updated the text colors, headings, and government license tags to preserve high accessibility and contrast.
+
 
