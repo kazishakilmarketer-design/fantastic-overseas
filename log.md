@@ -156,11 +156,11 @@ A command-based changes history and development timeline for the `fantastic over
 
 ---
 
-### [2026-06-25] Phase 15: Hero Background Reversion
-*   **Action**: Reverted homepage hero background layout to the original template's light radial gradient style.
+### [2026-06-25] Phase 15: Hero Background Selection
+*   **Action**: Restored and locked the homepage hero background layout to the local dark skyscraper background image theme (`images/hero-bg.jpg`).
 *   **Affected Files**:
     *   [MODIFY] `css/index.css` (Updated `.hero`, `.hero-tag`, `.hero h1`, `.hero h1 span`, and `.hero p` selectors)
     *   [MODIFY] `fantastic-overseas-rebranded.zip` (Re-packaged distribution zip archive)
-*   **Details**: Removed the custom dark background image `hero-bg.jpg` and restored the modern blue-purple radial gradient design for a clean, light-themed aesthetic. Updated the text colors, headings, and government license tags to preserve high accessibility and contrast.
+*   **Details**: Restored the premium dark skyscraper background image with a dark blue linear gradient overlay and high-contrast white headings/subtext as requested by the user.
 
 
