@@ -87,10 +87,22 @@
       </header>
 
       <!-- Stats Grid -->
-      <div class="db-stats-grid" style="grid-template-columns: 1fr;">
+      <div class="db-stats-grid">
         <div class="db-stat-card">
           <div class="db-stat-title">My Managed Candidates</div>
           <div class="db-stat-val" id="stat-clients">0</div>
+        </div>
+        <div class="db-stat-card">
+          <div class="db-stat-title">Total Portfolio Value</div>
+          <div class="db-stat-val" id="stat-total-value">৳0</div>
+        </div>
+        <div class="db-stat-card">
+          <div class="db-stat-title">Total Collected</div>
+          <div class="db-stat-val" id="stat-total-collected" style="color: #059669;">৳0</div>
+        </div>
+        <div class="db-stat-card">
+          <div class="db-stat-title">Outstanding Dues</div>
+          <div class="db-stat-val" id="stat-total-dues" style="color: #d97706;">৳0</div>
         </div>
       </div>
 
@@ -124,6 +136,10 @@
               <input type="number" id="client-paid-amount" class="form-control" required placeholder="E.g., 50000">
             </div>
             <div class="form-group">
+              <label>Due Amount (BDT) - Auto Calculated</label>
+              <input type="number" id="client-due-amount" class="form-control" readonly placeholder="0" style="background-color: var(--bg-main); cursor: not-allowed;">
+            </div>
+            <div class="form-group">
               <label>Initial Status Stage</label>
               <select id="client-step" class="form-control" required>
                 <option value="1">Step 1: Application Submitted</option>
@@ -133,7 +149,16 @@
                 <option value="5">Step 5: Departure Ready</option>
               </select>
             </div>
-            <div class="form-group"></div>
+            <div class="recommendation-banner">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-top: 2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <div>
+                <strong>Recommended Document Attachment Process:</strong> For faster visa approval and processing verification by the Admin, it is highly recommended to upload a scanned PDF/ZIP copy of candidate credentials and passport.
+              </div>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Attach Candidate Documents (Recommended PDF/ZIP)</label>
+              <input type="file" id="client-file" class="form-control" style="padding: 8px 12px;">
+            </div>
             <div class="form-group" style="grid-column: span 2;">
               <label style="margin-bottom: 8px; display: block;">Document Submission Checklist</label>
               <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
@@ -167,7 +192,21 @@
         </div>
 
         <div class="db-card">
-          <h2 style="font-size: 1.25rem; margin-bottom: 20px;">Candidates List</h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <h2 style="font-size: 1.25rem;">Candidates List</h2>
+            <button class="btn-export" id="btn-export-agent-csv">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-10a3 3 0 00-3-3h-1m-4 3l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Export to CSV
+            </button>
+          </div>
+
+          <div class="table-actions-bar">
+            <div class="search-input-wrapper">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input type="text" id="search-agent-clients" class="form-control" placeholder="Search candidate name, passport, trade...">
+            </div>
+          </div>
+
           <div class="db-table-wrapper">
             <table class="db-table">
               <thead>
@@ -176,13 +215,24 @@
                   <th>Passport & Phone</th>
                   <th>Trade / Position</th>
                   <th>Payment Status</th>
+                  <th>Due Amount</th>
+                  <th>Attached File</th>
                   <th>Approval Status</th>
                   <th>Current Step</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="clients-table-body">
                 <!-- Loaded dynamically -->
               </tbody>
+              <tfoot>
+                <tr style="background-color: var(--bg-main); font-weight: 700; border-top: 2px solid var(--border-color);">
+                  <td colspan="3">Total Aggregations</td>
+                  <td id="tfoot-agent-payment" style="color: var(--primary-light);">৳0 / ৳0</td>
+                  <td id="tfoot-agent-due" style="color: #ef4444;">৳0</td>
+                  <td colspan="4"></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         </div>
@@ -262,10 +312,83 @@
         </div>
       </section>
     </main>
-  </div>
 
-  <script src="js/db.js"></script>
-  <script>
+    <!-- Modal: Edit Candidate -->
+    <div id="modal-edit-client" class="db-modal">
+      <div class="db-modal-content" style="max-width: 700px;">
+        <h2 style="font-size: 1.35rem; margin-bottom: 24px;">Edit Candidate Information</h2>
+        <form id="form-edit-client" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <input type="hidden" id="edit-client-old-passport">
+          
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="edit-client-name" class="form-control" required placeholder="E.g., Rahim Uddin">
+          </div>
+          <div class="form-group">
+            <label>Passport Number</label>
+            <input type="text" id="edit-client-passport" class="form-control" required placeholder="E.g., A12345678">
+          </div>
+          <div class="form-group">
+            <label>Phone / Mobile Number</label>
+            <input type="tel" id="edit-client-phone" class="form-control" required placeholder="E.g., 01711-123456">
+          </div>
+          <div class="form-group">
+            <label>Job Trade / Position</label>
+            <input type="text" id="edit-client-trade" class="form-control" required placeholder="E.g., Electrician, Carpenter">
+          </div>
+          <div class="form-group">
+            <label>Total Contract Cost (BDT)</label>
+            <input type="number" id="edit-client-total-cost" class="form-control" required placeholder="E.g., 150000">
+          </div>
+          <div class="form-group">
+            <label>Initial Paid Amount (BDT)</label>
+            <input type="number" id="edit-client-paid-amount" class="form-control" required placeholder="E.g., 50000">
+          </div>
+          <div class="form-group">
+            <label>Due Amount (BDT) - Auto Calculated</label>
+            <input type="number" id="edit-client-due-amount" class="form-control" readonly placeholder="0" style="background-color: var(--bg-main); cursor: not-allowed;">
+          </div>
+          <div class="form-group">
+            <label>Current Status Stage</label>
+            <select id="edit-client-step" class="form-control" required>
+              <option value="1">Step 1: Application Submitted</option>
+              <option value="2">Step 2: Medical Clearance</option>
+              <option value="3">Step 3: Embassy Processing</option>
+              <option value="4">Step 4: Visa Stamped</option>
+              <option value="5">Step 5: Departure Ready</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Attach Candidate Documents (Recommended PDF/ZIP)</label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <input type="file" id="edit-client-file" class="form-control" style="padding: 8px 12px; flex-grow: 1;">
+              <span id="edit-client-current-file" style="font-size: 0.8rem; color: var(--text-muted); max-width: 200px; word-break: break-all;"></span>
+            </div>
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label style="margin-bottom: 8px; display: block;">Document Submission Checklist</label>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem; cursor: pointer;">
+                <input type="checkbox" name="edit-client-docs" value="Passport Copy"> Passport Copy
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem; cursor: pointer;">
+                <input type="checkbox" name="edit-client-docs" value="Police Clearance"> Police Clearance
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem; cursor: pointer;">
+                <input type="checkbox" name="edit-client-docs" value="Medical Fit Certificate"> Medical Fit Certificate
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem; cursor: pointer;">
+                <input type="checkbox" name="edit-client-docs" value="Experience Certificate"> Experience Certificate
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem; cursor: pointer;">
+                <input type="checkbox" name="edit-client-docs" value="Passport Size Photos"> Passport Size Photos
+              </label>
+            </div>
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label>Status Remarks (English)</label>
+            <textarea id="edit-client-msg-en" class="form-control" required placeholder="Remarks in English..."></textarea>
+<script>
     document.addEventListener('DOMContentLoaded', () => {
       if (!window.FO_DB) return;
 
@@ -283,6 +406,37 @@
       const formAddClient = document.getElementById('form-add-client');
       const formUpdateStatus = document.getElementById('form-update-status');
       const selectClient = document.getElementById('select-client');
+
+      const costInput = document.getElementById('client-total-cost');
+      const paidInput = document.getElementById('client-paid-amount');
+      const dueInput = document.getElementById('client-due-amount');
+
+      const editCostInput = document.getElementById('edit-client-total-cost');
+      const editPaidInput = document.getElementById('edit-client-paid-amount');
+      const editDueInput = document.getElementById('edit-client-due-amount');
+      
+      const editModal = document.getElementById('modal-edit-client');
+      const formEditClient = document.getElementById('form-edit-client');
+      const btnCloseEditModal = document.getElementById('btn-close-edit-modal');
+
+      let searchFilterValue = '';
+
+      // Live Due amount calculations
+      const updateDue = () => {
+        const cost = parseFloat(costInput.value) || 0;
+        const paid = parseFloat(paidInput.value) || 0;
+        dueInput.value = Math.max(0, cost - paid);
+      };
+      costInput.addEventListener('input', updateDue);
+      paidInput.addEventListener('input', updateDue);
+
+      const updateEditDue = () => {
+        const cost = parseFloat(editCostInput.value) || 0;
+        const paid = parseFloat(editPaidInput.value) || 0;
+        editDueInput.value = Math.max(0, cost - paid);
+      };
+      editCostInput.addEventListener('input', updateEditDue);
+      editPaidInput.addEventListener('input', updateEditDue);
 
       // Verify Session helper
       const checkSession = () => {
@@ -305,32 +459,98 @@
         const currentUser = db.getCurrentUser();
         if (!currentUser) return;
 
-        const clients = db.getClients().filter(c => c.agentId === currentUser.id);
+        let clients = db.getClients().filter(c => c.agentId === currentUser.id);
+
+        // Update Stats Grid
+        let totalValueVal = 0;
+        let totalCollectedVal = 0;
+        let totalDuesVal = 0;
+
+        clients.forEach(c => {
+          totalValueVal += (c.totalCost || 0);
+          totalCollectedVal += (c.amountPaid || 0);
+          totalDuesVal += (c.dueAmount || 0);
+        });
+
+        document.getElementById('stat-total-value').innerText = '৳' + totalValueVal.toLocaleString();
+        document.getElementById('stat-total-collected').innerText = '৳' + totalCollectedVal.toLocaleString();
+        document.getElementById('stat-total-dues').innerText = '৳' + totalDuesVal.toLocaleString();
         statClients.innerText = clients.length;
+
+        // Apply Search Filter if any
+        if (searchFilterValue) {
+          const q = searchFilterValue.toLowerCase().trim();
+          clients = clients.filter(c => 
+            c.name.toLowerCase().includes(q) || 
+            c.passport.toLowerCase().includes(q) || 
+            (c.trade && c.trade.toLowerCase().includes(q)) ||
+            (c.phone && c.phone.toLowerCase().includes(q))
+          );
+        }
 
         // Render table
         const tbody = document.getElementById('clients-table-body');
         tbody.innerHTML = '';
-        clients.forEach(c => {
-          const tr = document.createElement('tr');
-          const approvalBadge = c.approved 
-            ? `<span class="status-badge" style="background-color: #d1fae5; color: #065f46; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 600;">Approved</span>` 
-            : `<span class="status-badge" style="background-color: #fef3c7; color: #92400e; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 600;">Pending Approval</span>`;
-          
-          const phoneNum = c.phone || 'N/A';
-          const tradeVal = c.trade || 'N/A';
-          const paymentText = `৳${(c.amountPaid || 0).toLocaleString()} / ৳${(c.totalCost || 0).toLocaleString()}`;
 
-          tr.innerHTML = `
-            <td><strong>${c.name}</strong></td>
-            <td><code>${c.passport.toUpperCase()}</code><br><span style="font-size:0.75rem; color:var(--text-muted);">${phoneNum}</span></td>
-            <td>${tradeVal}</td>
-            <td><span style="font-size:0.85rem; font-weight:600; color:var(--primary);">${paymentText}</span></td>
-            <td>${approvalBadge}</td>
-            <td><span class="status-badge step-${c.statusStep}">Step ${c.statusStep}</span></td>
-          `;
-          tbody.appendChild(tr);
-        });
+        let tableTotalCost = 0;
+        let tableTotalPaid = 0;
+        let tableTotalDue = 0;
+
+        if (clients.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--text-muted); padding:30px;">No candidates enrolled.</td></tr>`;
+        } else {
+          clients.forEach(c => {
+            tableTotalCost += (c.totalCost || 0);
+            tableTotalPaid += (c.amountPaid || 0);
+            tableTotalDue += (c.dueAmount || 0);
+
+            const tr = document.createElement('tr');
+            const approvalBadge = c.approved 
+              ? `<span class="status-badge" style="background-color: #d1fae5; color: #065f46; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 600;">Approved</span>` 
+              : `<span class="status-badge" style="background-color: #fef3c7; color: #92400e; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 600;">Pending Approval</span>`;
+            
+            const phoneNum = c.phone || 'N/A';
+            const tradeVal = c.trade || 'N/A';
+            const fileVal = c.attachmentName && c.pdfData
+              ? `<a href="${c.pdfData}" download="${c.attachmentName}" style="font-size:0.75rem; color:#1e40af; background:#eff6ff; border:1px solid #bfdbfe; padding:4px 8px; border-radius:4px; display:inline-flex; align-items:center; gap:4px; font-weight:600;" title="Click to download PDF">📎 ${c.attachmentName}</a>`
+              : (c.attachmentName ? `<span style="font-size:0.75rem; color:#1e40af; background:#eff6ff; border:1px solid #bfdbfe; padding:4px 8px; border-radius:4px; display:inline-flex; align-items:center; gap:4px; font-weight:600;">📎 ${c.attachmentName}</span>` : `<span style="color:#94a3b8; font-size:0.75rem;">None</span>`);
+            
+            const paymentText = `৳${(c.amountPaid || 0).toLocaleString()} / ৳${(c.totalCost || 0).toLocaleString()}`;
+            const dueText = `৳${(c.dueAmount || 0).toLocaleString()}`;
+
+            tr.innerHTML = `
+              <td><strong>${c.name}</strong></td>
+              <td><code>${c.passport.toUpperCase()}</code><br><span style="font-size:0.75rem; color:var(--text-muted);">${phoneNum}</span></td>
+              <td>${tradeVal}</td>
+              <td><span style="font-size:0.85rem; font-weight:600; color:var(--primary);">${paymentText}</span></td>
+              <td><span style="font-size:0.85rem; font-weight:600; color:#ef4444;">${dueText}</span></td>
+              <td>${fileVal}</td>
+              <td>${approvalBadge}</td>
+              <td><span class="status-badge step-${c.statusStep}">Step ${c.statusStep}</span></td>
+              <td>
+                <div class="three-dot-menu-container">
+                  <button class="three-dot-btn">⋮</button>
+                  <div class="three-dot-dropdown">
+                    <button class="three-dot-dropdown-item action-edit-candidate" data-passport="${c.passport}">
+                      ✏️ Edit Info
+                    </button>
+                    <button class="three-dot-dropdown-item action-update-step" data-passport="${c.passport}">
+                      🔄 Update Step
+                    </button>
+                    <button class="three-dot-dropdown-item danger action-refund-candidate" data-passport="${c.passport}" data-name="${c.name}">
+                      💸 Refund Candidate
+                    </button>
+                  </div>
+                </div>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+
+        // Set Footers
+        document.getElementById('tfoot-agent-payment').innerText = `৳${tableTotalPaid.toLocaleString()} / ৳${tableTotalCost.toLocaleString()}`;
+        document.getElementById('tfoot-agent-due').innerText = `৳${tableTotalDue.toLocaleString()}`;
 
         // Load dropdown values for updater selector
         selectClient.innerHTML = '<option value="" disabled selected>-- Choose Candidate --</option>';
@@ -341,6 +561,34 @@
           selectClient.appendChild(opt);
         });
       };
+
+      // Search Filtering
+      document.getElementById('search-agent-clients').addEventListener('input', (e) => {
+        searchFilterValue = e.target.value;
+        refreshDashboard();
+      });
+
+      // Export to CSV
+      document.getElementById('btn-export-agent-csv').addEventListener('click', () => {
+        const currentUser = db.getCurrentUser();
+        if (!currentUser) return;
+        const clients = db.getClients().filter(c => c.agentId === currentUser.id);
+        if (clients.length === 0) {
+          alert('No candidate records available to export.');
+          return;
+        }
+        let csv = 'Name,Passport,Phone,Trade,Total Cost,Amount Paid,Due Amount,Attached Document,Approved,Current Step,Updated At\n';
+        clients.forEach(c => {
+          csv += `"${c.name}","${c.passport}","${c.phone}","${c.trade}",${c.totalCost},${c.amountPaid},${c.dueAmount},"${c.attachmentName || ''}",${c.approved},${c.statusStep},"${c.updatedAt}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', `my_candidates_${currentUser.name.replace(/\s+/g, '_')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
 
       // Handle Dropdown Change: Autofill form update details
       selectClient.addEventListener('change', () => {
@@ -358,8 +606,6 @@
           document.getElementById('update-msg-bn').value = client.statusMessageBn || '';
         }
       });
-
-
 
       // Login form handler
       loginForm.addEventListener('submit', (e) => {
@@ -428,23 +674,40 @@
           return;
         }
 
-        db.addClient({
-          name,
-          passport,
-          phone,
-          trade,
-          totalCost,
-          amountPaid,
-          documents,
-          statusStep: step,
-          statusMessageEn: msgEn,
-          statusMessageBn: msgBn,
-          agentId
-        });
+        const saveClientData = (pdfData = '', attachmentName = '') => {
+          db.addClient({
+            name,
+            passport,
+            phone,
+            trade,
+            totalCost,
+            amountPaid,
+            documents,
+            statusStep: step,
+            statusMessageEn: msgEn,
+            statusMessageBn: msgBn,
+            agentId,
+            attachmentName,
+            pdfData
+          });
 
-        formAddClient.reset();
-        refreshDashboard();
-        alert('Candidate successfully enlisted! Awaiting document and payment approval from Admin.');
+          formAddClient.reset();
+          dueInput.value = '0';
+          refreshDashboard();
+          alert('Candidate successfully enlisted! Awaiting document and payment approval from Admin.');
+        };
+
+        const fileInputEl = document.getElementById('client-file');
+        const file = fileInputEl.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            saveClientData(event.target.result, file.name);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          saveClientData();
+        }
       });
 
       // Handle Form Submit: Update Status Step
@@ -486,6 +749,172 @@
             alert('Error: ' + res.message);
           }
         }
+      });
+
+      // Modal management & Three-dot clicks
+      document.addEventListener('click', (e) => {
+        // Toggle dropdowns
+        const threeDotBtn = e.target.closest('.three-dot-btn');
+        if (threeDotBtn) {
+          e.stopPropagation();
+          const activeDropdown = threeDotBtn.nextElementSibling;
+          // Close other open dropdowns
+          document.querySelectorAll('.three-dot-dropdown').forEach(d => {
+            if (d !== activeDropdown) d.classList.remove('show');
+          });
+          activeDropdown.classList.toggle('show');
+          return;
+        }
+
+        // Close dropdowns if click elsewhere
+        document.querySelectorAll('.three-dot-dropdown').forEach(d => d.classList.remove('show'));
+
+        // Handle Click Actions
+        const btnEdit = e.target.closest('.action-edit-candidate');
+        const btnUpdate = e.target.closest('.action-update-step');
+        const btnRefund = e.target.closest('.action-refund-candidate');
+
+        if (btnEdit) {
+          const passport = btnEdit.getAttribute('data-passport');
+          const client = db.getClients().find(c => c.passport.toLowerCase() === passport.toLowerCase());
+          if (client) {
+            document.getElementById('edit-client-old-passport').value = client.passport;
+            document.getElementById('edit-client-name').value = client.name;
+            document.getElementById('edit-client-passport').value = client.passport;
+            document.getElementById('edit-client-phone').value = client.phone || '';
+            document.getElementById('edit-client-trade').value = client.trade || '';
+            document.getElementById('edit-client-total-cost').value = client.totalCost || 0;
+            document.getElementById('edit-client-paid-amount').value = client.amountPaid || 0;
+            document.getElementById('edit-client-due-amount').value = client.dueAmount || 0;
+            document.getElementById('edit-client-step').value = client.statusStep || 1;
+            document.getElementById('edit-client-msg-en').value = client.statusMessageEn || '';
+            document.getElementById('edit-client-msg-bn').value = client.statusMessageBn || '';
+            document.getElementById('edit-client-current-file').innerText = client.attachmentName 
+              ? 'Current file: ' + client.attachmentName 
+              : 'No file attached';
+
+            // Clear checkboxes
+            document.querySelectorAll('input[name="edit-client-docs"]').forEach(cb => cb.checked = false);
+            // Select checked documents
+            if (client.documents) {
+              client.documents.forEach(d => {
+                const cb = document.querySelector(`input[name="edit-client-docs"][value="${d}"]`);
+                if (cb) cb.checked = true;
+              });
+            }
+
+            editModal.style.display = 'flex';
+          }
+        }
+
+        if (btnUpdate) {
+          const passport = btnUpdate.getAttribute('data-passport');
+          // Switch to update tab
+          const tabBtn = document.querySelector('.db-nav-link[data-tab="tab-update-status"]');
+          if (tabBtn) tabBtn.click();
+          selectClient.value = passport;
+          // Trigger change event to fill remarks
+          selectClient.dispatchEvent(new Event('change'));
+        }
+
+        if (btnRefund) {
+          const passport = btnRefund.getAttribute('data-passport');
+          const name = btnRefund.getAttribute('data-name');
+          const client = db.getClients().find(c => c.passport.toLowerCase() === passport.toLowerCase());
+          if (client) {
+            const refundInput = prompt(`Enter Refund Amount for "${name}" (Current Paid: ৳${(client.amountPaid || 0).toLocaleString()}):`);
+            if (refundInput !== null) {
+              const refundAmount = parseFloat(refundInput.trim());
+              if (isNaN(refundAmount) || refundAmount <= 0) {
+                alert('Error: Please enter a valid positive number for the refund amount.');
+              } else if (refundAmount > client.amountPaid) {
+                alert(`Error: Refund amount cannot exceed the candidate's current paid amount of ৳${(client.amountPaid || 0).toLocaleString()}.`);
+              } else {
+                client.amountPaid -= refundAmount;
+                client.dueAmount = Math.max(0, client.totalCost - client.amountPaid);
+                
+                // Record the refund in status remarks automatically
+                const refundMsgEn = `Refund processed: ৳${refundAmount.toLocaleString()} BDT.`;
+                const refundMsgBn = `রিফান্ড প্রসেস করা হয়েছে: ৳${refundAmount.toLocaleString()} টাকা।`;
+                client.statusMessageEn = refundMsgEn;
+                client.statusMessageBn = refundMsgBn;
+                
+                db.updateClient(client.passport, client);
+                refreshDashboard();
+                alert(`Refund of ৳${refundAmount.toLocaleString()} processed successfully for ${name}. Paid amount updated to ৳${client.amountPaid.toLocaleString()} and synchronized.`);
+              }
+            }
+          }
+        }
+      });
+
+      // Handle Edit Form Submit
+      formEditClient.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const oldPassport = document.getElementById('edit-client-old-passport').value;
+        const name = document.getElementById('edit-client-name').value;
+        const passport = document.getElementById('edit-client-passport').value.trim();
+        const phone = document.getElementById('edit-client-phone').value;
+        const trade = document.getElementById('edit-client-trade').value;
+        const totalCost = parseFloat(document.getElementById('edit-client-total-cost').value) || 0;
+        const amountPaid = parseFloat(document.getElementById('edit-client-paid-amount').value) || 0;
+        
+        const checkedDocs = document.querySelectorAll('input[name="edit-client-docs"]:checked');
+        const documents = Array.from(checkedDocs).map(cb => cb.value);
+
+        const step = parseInt(document.getElementById('edit-client-step').value, 10);
+        const msgEn = document.getElementById('edit-client-msg-en').value;
+        const msgBn = document.getElementById('edit-client-msg-bn').value;
+
+        // Retrieve existing client to preserve approval state and agentId
+        const existingClients = db.getClients();
+        const existing = existingClients.find(c => c.passport.toLowerCase() === oldPassport.toLowerCase());
+        if (!existing) {
+          alert('Error: Candidate not found.');
+          return;
+        }
+
+        const updateClientData = (pdfData = null, attachmentName = null) => {
+          const updatedClient = {
+            name,
+            passport,
+            phone,
+            trade,
+            totalCost,
+            amountPaid,
+            documents,
+            statusStep: step,
+            statusMessageEn: msgEn,
+            statusMessageBn: msgBn,
+            agentId: existing.agentId,
+            approved: existing.approved, // Keep the approval state
+            attachmentName: attachmentName !== null ? attachmentName : existing.attachmentName || '',
+            pdfData: pdfData !== null ? pdfData : existing.pdfData || ''
+          };
+
+          db.updateClient(oldPassport, updatedClient);
+          editModal.style.display = 'none';
+          formEditClient.reset();
+          refreshDashboard();
+          alert('Candidate details updated and synchronized successfully!');
+        };
+
+        const editFileInput = document.getElementById('edit-client-file');
+        const file = editFileInput.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            updateClientData(event.target.result, file.name);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          updateClientData();
+        }
+      });
+
+      // Close Edit Modal
+      btnCloseEditModal.addEventListener('click', () => {
+        editModal.style.display = 'none';
       });
 
       // Session startup check

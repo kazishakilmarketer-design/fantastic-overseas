@@ -163,4 +163,15 @@ A command-based changes history and development timeline for the `fantastic over
     *   [MODIFY] `fantastic-overseas-rebranded.zip` (Re-packaged distribution zip archive)
 *   **Details**: Restored the premium dark skyscraper background image with a dark blue linear gradient overlay and high-contrast white headings/subtext as requested by the user.
 
+---
+
+### [2026-06-28] Phase 16: Local Storage Sharing & Admin Edit Fixes
+*   **Action**: Moved `login/admin.html` to root directory `admin.html` to share `localStorage` under `file://` protocol, and removed aggressive database seeding constraints in `db.js`.
+*   **Affected Files**:
+    *   [DELETE] `login/admin.html` (Relocated to root)
+    *   [NEW] `admin.html` (Created at root with updated CSS/JS links)
+    *   [MODIFY] `js/db.js` (Removed conditional `fo_messages` cleanup code that reset admin edits)
+    *   [MODIFY] `credentials.md` (Updated Super Admin login URLs to reflect the root location)
+*   **Details**: Resolved the `file://` protocol subdirectory origin isolation where data did not sync between the root files and the subdirectory. Removed the bug in `db.js` that cleared custom proprietor/director quotes upon subsequent loads.
+
 

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - Fantastic Overseas</title>
-  <link rel="stylesheet" href="../css/index.css">
+  <link rel="stylesheet" href="css/index.css">
   <style>
     /* Modal styles */
     .db-modal {
@@ -102,7 +102,7 @@
       </div>
 
       <div style="text-align: center; margin-top: 20px;">
-        <a href="../index.html" style="font-size:0.85rem; color:var(--text-muted);">← Back to Website</a>
+        <a href="index.html" style="font-size:0.85rem; color:var(--text-muted);">← Back to Website</a>
       </div>
     </div>
   </div>
@@ -175,6 +175,18 @@
         <div class="db-stat-card">
           <div class="db-stat-title">Pending Approvals</div>
           <div class="db-stat-val" id="stat-approvals" style="color: var(--secondary);">0</div>
+        </div>
+        <div class="db-stat-card">
+          <div class="db-stat-title">Total Portfolio Value</div>
+          <div class="db-stat-val" id="stat-total-value">৳0</div>
+        </div>
+        <div class="db-stat-card">
+          <div class="db-stat-title">Total Collected</div>
+          <div class="db-stat-val" id="stat-total-collected" style="color: #059669;">৳0</div>
+        </div>
+        <div class="db-stat-card">
+          <div class="db-stat-title">Outstanding Dues</div>
+          <div class="db-stat-val" id="stat-total-dues" style="color: #d97706;">৳0</div>
         </div>
       </div>
 
@@ -332,8 +344,9 @@
                   <th>Trade / Position</th>
                   <th>Assigned Agent</th>
                   <th>Payment Status</th>
+                  <th>Due Amount</th>
                   <th>Document Submission</th>
-                  <th>Action</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="approvals-table-body">
@@ -347,7 +360,21 @@
       <!-- Tab: Clients Tracking -->
       <section id="tab-clients" class="db-tab-pane" style="display: none;">
         <div class="db-card">
-          <h2 style="font-size: 1.25rem; margin-bottom: 20px;">All Enrolled Candidates</h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <h2 style="font-size: 1.25rem;">All Enrolled Candidates</h2>
+            <button class="btn-export" id="btn-export-admin-csv">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-10a3 3 0 00-3-3h-1m-4 3l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Export to CSV
+            </button>
+          </div>
+
+          <div class="table-actions-bar">
+            <div class="search-input-wrapper">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input type="text" id="search-admin-clients" class="form-control" placeholder="Search candidate name, passport, trade...">
+            </div>
+          </div>
+
           <div class="db-table-wrapper">
             <table class="db-table">
               <thead>
@@ -356,16 +383,28 @@
                   <th>Passport & Phone</th>
                   <th>Trade / Position</th>
                   <th>Payment Status</th>
+                  <th>Due Amount</th>
+                  <th>Attached File</th>
                   <th>Approval Status</th>
                   <th>Current Step</th>
                   <th>Assigned Agent</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="clients-table-body">
                 <!-- Loaded dynamically -->
               </tbody>
+              <tfoot>
+                <tr style="background-color: var(--bg-main); font-weight: 700; border-top: 2px solid var(--border-color);">
+                  <td colspan="3">Total Aggregations</td>
+                  <td id="tfoot-admin-payment" style="color: var(--primary-light);">৳0 / ৳0</td>
+                  <td id="tfoot-admin-due" style="color: #ef4444;">৳0</td>
+                  <td colspan="5"></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
+        </div>
       </section>
 
       <!-- Tab: Settings (Security & Credentials) -->
@@ -390,6 +429,94 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- Modal: Edit Candidate Admin -->
+  <div id="modal-edit-client-admin" class="db-modal">
+    <div class="db-modal-content" style="max-width: 700px;">
+      <h2 style="font-size: 1.35rem; margin-bottom: 24px;">Edit Candidate Details (Admin Mode)</h2>
+      <form id="form-edit-client-admin" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <input type="hidden" id="admin-edit-client-old-passport">
+        
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="admin-edit-client-name" class="form-control" required placeholder="E.g., Rahim Uddin">
+        </div>
+        <div class="form-group">
+          <label>Passport Number</label>
+          <input type="text" id="admin-edit-client-passport" class="form-control" required placeholder="E.g., A12345678">
+        </div>
+        <div class="form-group">
+          <label>Phone / Mobile Number</label>
+          <input type="tel" id="admin-edit-client-phone" class="form-control" required placeholder="E.g., 01711-123456">
+        </div>
+        <div class="form-group">
+          <label>Job Trade / Position</label>
+          <input type="text" id="admin-edit-client-trade" class="form-control" required placeholder="E.g., Electrician, Carpenter">
+        </div>
+        <div class="form-group">
+          <label>Total Contract Cost (BDT)</label>
+          <input type="number" id="admin-edit-client-total-cost" class="form-control" required placeholder="E.g., 150000">
+        </div>
+        <div class="form-group">
+          <label>Amount Paid (BDT)</label>
+          <input type="number" id="admin-edit-client-paid-amount" class="form-control" required placeholder="E.g., 50000">
+        </div>
+        <div class="form-group">
+          <label>Due Amount (BDT) - Auto Calculated</label>
+          <input type="number" id="admin-edit-client-due-amount" class="form-control" readonly placeholder="0" style="background-color: var(--bg-main); cursor: not-allowed;">
+        </div>
+        <div class="form-group">
+          <label>Current Status Stage</label>
+          <select id="admin-edit-client-step" class="form-control" required>
+            <option value="1">Step 1: Application Submitted</option>
+            <option value="2">Step 2: Medical Clearance</option>
+            <option value="3">Step 3: Embassy Processing</option>
+            <option value="4">Step 4: Visa Stamped</option>
+            <option value="5">Step 5: Departure Ready</option>
+          </select>
+        </div>
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Attach Candidate Documents (Recommended PDF/ZIP)</label>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="file" id="admin-edit-client-file" class="form-control" style="padding: 8px 12px; flex-grow: 1;">
+            <span id="admin-edit-client-current-file" style="font-size: 0.8rem; color: var(--text-muted); max-width: 200px; word-break: break-all;"></span>
+          </div>
+        </div>
+        <div class="form-group" style="grid-column: span 2;">
+          <label style="margin-bottom: 8px; display: block;">Document Submission Checklist</label>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" name="admin-edit-client-docs" value="Passport Copy"> Passport Copy
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" name="admin-edit-client-docs" value="Police Clearance"> Police Clearance
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" name="admin-edit-client-docs" value="Medical Fit Certificate"> Medical Fit Certificate
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" name="admin-edit-client-docs" value="Experience Certificate"> Experience Certificate
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" name="admin-edit-client-docs" value="Passport Size Photos"> Passport Size Photos
+            </label>
+          </div>
+        </div>
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Status Remarks (English)</label>
+          <textarea id="admin-edit-client-msg-en" class="form-control" required placeholder="Remarks in English..."></textarea>
+        </div>
+        <div class="form-group" style="grid-column: span 2;">
+          <label>Status Remarks (Bengali)</label>
+          <textarea id="admin-edit-client-msg-bn" class="form-control" required placeholder="আপডেট মন্তব্য বাংলায়..."></textarea>
+        </div>
+        <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-close-admin-edit-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- Modal: Add Package -->
@@ -454,7 +581,7 @@
     </div>
   </div>
 
-  <script src="../js/db.js"></script>
+  <script src="js/db.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       if (!window.FO_DB) return;
@@ -478,10 +605,29 @@
       const formAddPkg = document.getElementById('form-add-pkg');
       const formAddAgent = document.getElementById('form-add-agent');
 
+      // Edit Candidate Modal
+      const modalEditClientAdmin = document.getElementById('modal-edit-client-admin');
+      const formEditClientAdmin = document.getElementById('form-edit-client-admin');
+      const btnCloseAdminEditModal = document.getElementById('btn-close-admin-edit-modal');
+      const editCostInput = document.getElementById('admin-edit-client-total-cost');
+      const editPaidInput = document.getElementById('admin-edit-client-paid-amount');
+      const editDueInput = document.getElementById('admin-edit-client-due-amount');
+
       // Edit Content Form Inputs
       const formEditAbout = document.getElementById('form-edit-about');
       const formEditMessages = document.getElementById('form-edit-messages');
       const formAddGallery = document.getElementById('form-add-gallery');
+
+      let searchFilterValue = '';
+
+      // Live due calculation on edit
+      const updateEditDue = () => {
+        const cost = parseFloat(editCostInput.value) || 0;
+        const paid = parseFloat(editPaidInput.value) || 0;
+        editDueInput.value = Math.max(0, cost - paid);
+      };
+      editCostInput.addEventListener('input', updateEditDue);
+      editPaidInput.addEventListener('input', updateEditDue);
 
       // Verify Session helper
       const checkSession = () => {
@@ -531,6 +677,20 @@
         statClients.innerText = clients.filter(c => c.approved).length;
         document.getElementById('stat-approvals').innerText = clients.filter(c => !c.approved).length;
 
+        // Calculate and render visual stats
+        let totalValueVal = 0;
+        let totalCollectedVal = 0;
+        let totalDuesVal = 0;
+        clients.forEach(c => {
+          totalValueVal += (c.totalCost || 0);
+          totalCollectedVal += (c.amountPaid || 0);
+          totalDuesVal += (c.dueAmount || 0);
+        });
+
+        document.getElementById('stat-total-value').innerText = '৳' + totalValueVal.toLocaleString();
+        document.getElementById('stat-total-collected').innerText = '৳' + totalCollectedVal.toLocaleString();
+        document.getElementById('stat-total-dues').innerText = '৳' + totalDuesVal.toLocaleString();
+
         // Render Packages Table
         const pkgTbody = document.getElementById('packages-table-body');
         pkgTbody.innerHTML = '';
@@ -574,31 +734,81 @@
           agentsTbody.appendChild(tr);
         });
 
-        // Render All Candidates Table
+        // Filter and Render All Candidates Table
+        let filteredClients = [...clients];
+        if (searchFilterValue) {
+          const q = searchFilterValue.toLowerCase().trim();
+          filteredClients = filteredClients.filter(c => 
+            c.name.toLowerCase().includes(q) || 
+            c.passport.toLowerCase().includes(q) || 
+            (c.trade && c.trade.toLowerCase().includes(q)) ||
+            (c.phone && c.phone.toLowerCase().includes(q))
+          );
+        }
+
         const clientsTbody = document.getElementById('clients-table-body');
         clientsTbody.innerHTML = '';
-        clients.forEach(c => {
-          const tr = document.createElement('tr');
-          const agentName = agents.find(a => a.id === c.agentId)?.name || 'Direct';
-          const approvalBadge = c.approved 
-            ? `<span class="status-badge" style="background-color: #d1fae5; color: #065f46; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 600;">Approved</span>` 
-            : `<span class="status-badge" style="background-color: #fef3c7; color: #92400e; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 600;">Pending Approval</span>`;
-          
-          const phoneNum = c.phone || 'N/A';
-          const tradeVal = c.trade || 'N/A';
-          const paymentText = `৳${(c.amountPaid || 0).toLocaleString()} / ৳${(c.totalCost || 0).toLocaleString()}`;
 
-          tr.innerHTML = `
-            <td><strong>${c.name}</strong></td>
-            <td><code>${c.passport.toUpperCase()}</code><br><span style="font-size:0.75rem; color:var(--text-muted);">${phoneNum}</span></td>
-            <td>${tradeVal}</td>
-            <td><span style="font-size:0.85rem; font-weight:600; color:var(--primary);">${paymentText}</span></td>
-            <td>${approvalBadge}</td>
-            <td><span class="status-badge step-${c.statusStep}">Step ${c.statusStep}</span></td>
-            <td><strong>${agentName}</strong></td>
-          `;
-          clientsTbody.appendChild(tr);
-        });
+        let tableTotalCost = 0;
+        let tableTotalPaid = 0;
+        let tableTotalDue = 0;
+
+        if (filteredClients.length === 0) {
+          clientsTbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--text-muted); padding:30px;">No candidates found.</td></tr>`;
+        } else {
+          filteredClients.forEach(c => {
+            tableTotalCost += (c.totalCost || 0);
+            tableTotalPaid += (c.amountPaid || 0);
+            tableTotalDue += (c.dueAmount || 0);
+
+            const tr = document.createElement('tr');
+            const agentName = agents.find(a => a.id === c.agentId)?.name || 'Direct';
+            const approvalBadge = c.approved 
+              ? `<span class="status-badge" style="background-color: #d1fae5; color: #065f46; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 600;">Approved</span>` 
+              : `<span class="status-badge" style="background-color: #fef3c7; color: #92400e; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 600;">Pending Approval</span>`;
+            
+            const phoneNum = c.phone || 'N/A';
+            const tradeVal = c.trade || 'N/A';
+            const paymentText = `৳${(c.amountPaid || 0).toLocaleString()} / ৳${(c.totalCost || 0).toLocaleString()}`;
+            const dueText = `৳${(c.dueAmount || 0).toLocaleString()}`;
+            const fileVal = c.attachmentName && c.pdfData
+              ? `<a href="${c.pdfData}" download="${c.attachmentName}" style="font-size:0.75rem; color:#1e40af; background:#eff6ff; border:1px solid #bfdbfe; padding:4px 8px; border-radius:4px; display:inline-flex; align-items:center; gap:4px; font-weight:600;" title="Click to download PDF">📎 ${c.attachmentName}</a>`
+              : (c.attachmentName ? `<span style="font-size:0.75rem; color:#1e40af; background:#eff6ff; border:1px solid #bfdbfe; padding:4px 8px; border-radius:4px; display:inline-flex; align-items:center; gap:4px; font-weight:600;">📎 ${c.attachmentName}</span>` : `<span style="color:#94a3b8; font-size:0.75rem;">None</span>`);
+
+            tr.innerHTML = `
+              <td><strong>${c.name}</strong></td>
+              <td><code>${c.passport.toUpperCase()}</code><br><span style="font-size:0.75rem; color:var(--text-muted);">${phoneNum}</span></td>
+              <td>${tradeVal}</td>
+              <td><span style="font-size:0.85rem; font-weight:600; color:var(--primary);">${paymentText}</span></td>
+              <td><span style="font-size:0.85rem; font-weight:600; color:#ef4444;">${dueText}</span></td>
+              <td>${fileVal}</td>
+              <td>${approvalBadge}</td>
+              <td><span class="status-badge step-${c.statusStep}">Step ${c.statusStep}</span></td>
+              <td><strong>${agentName}</strong></td>
+              <td>
+                <div class="three-dot-menu-container">
+                  <button class="three-dot-btn">⋮</button>
+                  <div class="three-dot-dropdown">
+                    <button class="three-dot-dropdown-item action-edit-candidate-admin" data-passport="${c.passport}">
+                      ✏️ Edit Details
+                    </button>
+                    ${!c.approved ? `
+                      <button class="three-dot-dropdown-item action-approve-candidate-admin" data-passport="${c.passport}">
+                        ✓ Approve File
+                      </button>
+                    ` : ''}
+                    <button class="three-dot-dropdown-item danger action-refund-candidate-admin" data-passport="${c.passport}" data-name="${c.name}">
+                      💸 Refund Candidate
+                    </button>
+                  </div>
+                </div>
+              </td>
+            `;
+            clientsTbody.appendChild(tr);
+          });
+        }
+        document.getElementById('tfoot-admin-payment').innerText = `৳${tableTotalPaid.toLocaleString()} / ৳${tableTotalCost.toLocaleString()}`;
+        document.getElementById('tfoot-admin-due').innerText = `৳${tableTotalDue.toLocaleString()}`;
 
         // Render Pending Approvals Table
         const approvalsTbody = document.getElementById('approvals-table-body');
@@ -606,7 +816,7 @@
         const pendingClients = clients.filter(c => !c.approved);
         
         if (pendingClients.length === 0) {
-          approvalsTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:30px;">No pending client approvals.</td></tr>`;
+          approvalsTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:30px;">No pending client approvals.</td></tr>`;
         } else {
           pendingClients.forEach(c => {
             const tr = document.createElement('tr');
@@ -622,11 +832,18 @@
                 <div style="background: var(--primary-light); height: 100%; width: ${pct}%"></div>
               </div>
             `;
+            const dueText = `৳${(c.dueAmount || 0).toLocaleString()}`;
             
             // Document checkboxes
-            const docList = (c.documents || []).length > 0
+            let docList = (c.documents || []).length > 0
               ? c.documents.map(d => `<span style="display:inline-block; font-size:0.72rem; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; padding:2px 6px; border-radius:4px; margin:2px;">✓ ${d}</span>`).join(' ')
               : `<span style="font-size:0.75rem; color:#ef4444; font-weight:600;">No Documents</span>`;
+            
+            if (c.attachmentName && c.pdfData) {
+              docList += `<br><a href="${c.pdfData}" download="${c.attachmentName}" style="display:inline-block; font-size:0.72rem; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; padding:4px 8px; border-radius:4px; margin:2px; font-weight:600;" title="Click to download PDF">📎 PDF: ${c.attachmentName}</a>`;
+            } else if (c.attachmentName) {
+              docList += `<br><span style="display:inline-block; font-size:0.72rem; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; padding:2px 6px; border-radius:4px; margin:2px; font-weight:600;">📎 ${c.attachmentName}</span>`;
+            }
 
             tr.innerHTML = `
               <td><strong>${c.name}</strong></td>
@@ -634,11 +851,23 @@
               <td>${tradeVal}</td>
               <td><strong>${agentName}</strong></td>
               <td><div style="min-width: 140px;">${payBar}</div></td>
-              <td><div style="max-width: 250px; display:flex; flex-wrap:wrap;">${docList}</div></td>
+              <td><span style="font-size:0.85rem; font-weight:600; color:#ef4444;">${dueText}</span></td>
+              <td><div style="max-width: 250px; display:flex; flex-wrap:wrap; align-items:center;">${docList}</div></td>
               <td>
-                <button class="btn btn-primary btn-sm action-btn-approve" data-passport="${c.passport}" style="padding:6px 12px; font-size:0.75rem;">
-                  Approve & Verify
-                </button>
+                <div class="three-dot-menu-container">
+                  <button class="three-dot-btn">⋮</button>
+                  <div class="three-dot-dropdown">
+                    <button class="three-dot-dropdown-item action-approve-candidate-admin" data-passport="${c.passport}">
+                      ✓ Approve File
+                    </button>
+                    <button class="three-dot-dropdown-item action-edit-candidate-admin" data-passport="${c.passport}">
+                      ✏️ Edit Details
+                    </button>
+                    <button class="three-dot-dropdown-item danger action-refund-candidate-admin" data-passport="${c.passport}" data-name="${c.name}">
+                      💸 Refund Candidate
+                    </button>
+                  </div>
+                </div>
               </td>
             `;
             approvalsTbody.appendChild(tr);
@@ -660,7 +889,31 @@
         });
       };
 
+      // Search Filtering
+      document.getElementById('search-admin-clients').addEventListener('input', (e) => {
+        searchFilterValue = e.target.value;
+        refreshDashboard();
+      });
 
+      // Export Candidates to CSV
+      document.getElementById('btn-export-admin-csv').addEventListener('click', () => {
+        const clients = db.getClients();
+        if (clients.length === 0) {
+          alert('No candidate records available to export.');
+          return;
+        }
+        let csv = 'Name,Passport,Phone,Trade,Total Cost,Amount Paid,Due Amount,Attached Document,Approved,Current Step,Updated At,Agent ID\n';
+        clients.forEach(c => {
+          csv += `"${c.name}","${c.passport}","${c.phone}","${c.trade}",${c.totalCost},${c.amountPaid},${c.dueAmount},"${c.attachmentName || ''}",${c.approved},${c.statusStep},"${c.updatedAt}","${c.agentId}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', 'all_enrolled_candidates.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
 
       // Form login handler
       loginForm.addEventListener('submit', (e) => {
@@ -802,11 +1055,30 @@
 
       // Handle Delete Package, Agent, Gallery, & Approve clicks
       document.addEventListener('click', (e) => {
+        // Toggle three-dot menu dropdowns
+        const threeDotBtn = e.target.closest('.three-dot-btn');
+        if (threeDotBtn) {
+          e.stopPropagation();
+          const activeDropdown = threeDotBtn.nextElementSibling;
+          document.querySelectorAll('.three-dot-dropdown').forEach(d => {
+            if (d !== activeDropdown) d.classList.remove('show');
+          });
+          activeDropdown.classList.toggle('show');
+          return;
+        }
+
+        // Close dropdowns if click elsewhere
+        document.querySelectorAll('.three-dot-dropdown').forEach(d => d.classList.remove('show'));
+
         const btnDelPkg = e.target.closest('.action-btn-delete-pkg');
         const btnDelAgent = e.target.closest('.action-btn-delete-agent');
         const btnResetAgent = e.target.closest('.action-btn-reset-agent');
         const btnDelGal = e.target.closest('.action-btn-delete-gal');
-        const btnApprove = e.target.closest('.action-btn-approve');
+        
+        // Custom Candidate Clicks
+        const btnEditAdmin = e.target.closest('.action-edit-candidate-admin');
+        const btnApproveAdmin = e.target.closest('.action-approve-candidate-admin');
+        const btnRefundAdmin = e.target.closest('.action-refund-candidate-admin');
 
         if (btnDelPkg) {
           if (confirm('Delete this package?')) {
@@ -847,14 +1119,148 @@
             refreshDashboard();
           }
         }
-        if (btnApprove) {
-          const passport = btnApprove.getAttribute('data-passport');
-          if (confirm('Verify and approve this candidate file? This will make their tracking portal active.')) {
+
+        // Candidates logic
+        if (btnApproveAdmin) {
+          const passport = btnApproveAdmin.getAttribute('data-passport');
+          if (confirm('Verify and approve this candidate file? This will activate their online visa tracking.')) {
             db.approveClient(passport);
             refreshDashboard();
             alert('Candidate file approved and verified successfully!');
           }
         }
+
+        if (btnEditAdmin) {
+          const passport = btnEditAdmin.getAttribute('data-passport');
+          const client = db.getClients().find(c => c.passport.toLowerCase() === passport.toLowerCase());
+          if (client) {
+            document.getElementById('admin-edit-client-old-passport').value = client.passport;
+            document.getElementById('admin-edit-client-name').value = client.name;
+            document.getElementById('admin-edit-client-passport').value = client.passport;
+            document.getElementById('admin-edit-client-phone').value = client.phone || '';
+            document.getElementById('admin-edit-client-trade').value = client.trade || '';
+            document.getElementById('admin-edit-client-total-cost').value = client.totalCost || 0;
+            document.getElementById('admin-edit-client-paid-amount').value = client.amountPaid || 0;
+            document.getElementById('admin-edit-client-due-amount').value = client.dueAmount || 0;
+            document.getElementById('admin-edit-client-step').value = client.statusStep || 1;
+            document.getElementById('admin-edit-client-msg-en').value = client.statusMessageEn || '';
+            document.getElementById('admin-edit-client-msg-bn').value = client.statusMessageBn || '';
+            document.getElementById('admin-edit-client-current-file').innerText = client.attachmentName 
+              ? 'Current file: ' + client.attachmentName 
+              : 'No file attached';
+
+            // Clear checkboxes
+            document.querySelectorAll('input[name="admin-edit-client-docs"]').forEach(cb => cb.checked = false);
+            // Select checked documents
+            if (client.documents) {
+              client.documents.forEach(d => {
+                const cb = document.querySelector(`input[name="admin-edit-client-docs"][value="${d}"]`);
+                if (cb) cb.checked = true;
+              });
+            }
+
+            modalEditClientAdmin.style.display = 'flex';
+          }
+        }
+
+        if (btnRefundAdmin) {
+          const passport = btnRefundAdmin.getAttribute('data-passport');
+          const name = btnRefundAdmin.getAttribute('data-name');
+          const client = db.getClients().find(c => c.passport.toLowerCase() === passport.toLowerCase());
+          if (client) {
+            const refundInput = prompt(`Enter Refund Amount for "${name}" (Current Paid: ৳${(client.amountPaid || 0).toLocaleString()}):`);
+            if (refundInput !== null) {
+              const refundAmount = parseFloat(refundInput.trim());
+              if (isNaN(refundAmount) || refundAmount <= 0) {
+                alert('Error: Please enter a valid positive number for the refund amount.');
+              } else if (refundAmount > client.amountPaid) {
+                alert(`Error: Refund amount cannot exceed the candidate's current paid amount of ৳${(client.amountPaid || 0).toLocaleString()}.`);
+              } else {
+                client.amountPaid -= refundAmount;
+                client.dueAmount = Math.max(0, client.totalCost - client.amountPaid);
+                
+                // Record the refund in status remarks automatically
+                const refundMsgEn = `Refund processed: ৳${refundAmount.toLocaleString()} BDT.`;
+                const refundMsgBn = `রিফান্ড প্রসেস করা হয়েছে: ৳${refundAmount.toLocaleString()} টাকা।`;
+                client.statusMessageEn = refundMsgEn;
+                client.statusMessageBn = refundMsgBn;
+                
+                db.updateClient(client.passport, client);
+                refreshDashboard();
+                alert(`Refund of ৳${refundAmount.toLocaleString()} processed successfully for ${name}. Paid amount updated to ৳${client.amountPaid.toLocaleString()} and synchronized.`);
+              }
+            }
+          }
+        }
+      });
+
+      // Handle Admin Edit Form Submit
+      formEditClientAdmin.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const oldPassport = document.getElementById('admin-edit-client-old-passport').value;
+        const name = document.getElementById('admin-edit-client-name').value;
+        const passport = document.getElementById('admin-edit-client-passport').value.trim();
+        const phone = document.getElementById('admin-edit-client-phone').value;
+        const trade = document.getElementById('admin-edit-client-trade').value;
+        const totalCost = parseFloat(document.getElementById('admin-edit-client-total-cost').value) || 0;
+        const amountPaid = parseFloat(document.getElementById('admin-edit-client-paid-amount').value) || 0;
+        
+        const checkedDocs = document.querySelectorAll('input[name="admin-edit-client-docs"]:checked');
+        const documents = Array.from(checkedDocs).map(cb => cb.value);
+
+        const step = parseInt(document.getElementById('admin-edit-client-step').value, 10);
+        const msgEn = document.getElementById('admin-edit-client-msg-en').value;
+        const msgBn = document.getElementById('admin-edit-client-msg-bn').value;
+
+        // Retrieve existing client
+        const existingClients = db.getClients();
+        const existing = existingClients.find(c => c.passport.toLowerCase() === oldPassport.toLowerCase());
+        if (!existing) {
+          alert('Error: Candidate not found.');
+          return;
+        }
+
+        const updateClientDataAdmin = (pdfData = null, attachmentName = null) => {
+          const updatedClient = {
+            name,
+            passport,
+            phone,
+            trade,
+            totalCost,
+            amountPaid,
+            documents,
+            statusStep: step,
+            statusMessageEn: msgEn,
+            statusMessageBn: msgBn,
+            agentId: existing.agentId,
+            approved: existing.approved, // Keep approval state
+            attachmentName: attachmentName !== null ? attachmentName : existing.attachmentName || '',
+            pdfData: pdfData !== null ? pdfData : existing.pdfData || ''
+          };
+
+          db.updateClient(oldPassport, updatedClient);
+          modalEditClientAdmin.style.display = 'none';
+          formEditClientAdmin.reset();
+          refreshDashboard();
+          alert('Candidate details updated and synchronized successfully!');
+        };
+
+        const editFileInput = document.getElementById('admin-edit-client-file');
+        const file = editFileInput.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            updateClientDataAdmin(event.target.result, file.name);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          updateClientDataAdmin();
+        }
+      });
+
+      // Close Admin Edit Modal
+      btnCloseAdminEditModal.addEventListener('click', () => {
+        modalEditClientAdmin.style.display = 'none';
       });
 
       // Form: Update Credentials

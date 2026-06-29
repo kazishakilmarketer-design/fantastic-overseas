@@ -71,6 +71,8 @@ const DB = {
           trade: 'General Worker',
           totalCost: 150000,
           amountPaid: 150000,
+          dueAmount: 0,
+          attachmentName: 'passport_scan.pdf',
           documents: ['Passport Copy', 'Medical Fit Certificate', 'Police Clearance', 'Passport Size Photos'],
           approved: true,
           statusStep: 4, // Visa Stamped
@@ -86,6 +88,8 @@ const DB = {
           trade: 'Electrician',
           totalCost: 220000,
           amountPaid: 200000,
+          dueAmount: 20000,
+          attachmentName: '',
           documents: ['Passport Copy', 'Medical Fit Certificate', 'Police Clearance'],
           approved: true,
           statusStep: 2, // Medical Clearance
@@ -101,6 +105,8 @@ const DB = {
           trade: 'Hospitality Staff',
           totalCost: 180000,
           amountPaid: 180000,
+          dueAmount: 0,
+          attachmentName: 'experience_certs.zip',
           documents: ['Passport Copy', 'Medical Fit Certificate', 'Police Clearance', 'Passport Size Photos', 'Experience Certificate'],
           approved: true,
           statusStep: 5, // Departure Ready
@@ -127,11 +133,6 @@ const DB = {
     }
 
     // Seed Message/Leadership Page Content
-    const msgData = localStorage.getItem(this.KEYS.MESSAGES);
-    if (msgData && (!msgData.includes('JAHANGIR') || !msgData.includes('director img.jpeg'))) {
-      localStorage.removeItem(this.KEYS.MESSAGES);
-    }
-
     if (!localStorage.getItem(this.KEYS.MESSAGES)) {
       const defaultMessages = {
         proprietorName: 'MD. JAHANGIR ALAM',
@@ -290,6 +291,8 @@ const DB = {
     const clients = this.getClients();
     client.updatedAt = new Date().toISOString().split('T')[0];
     client.approved = false; // Candidates registered by agents require admin approval
+    // Ensure dueAmount is correctly calculated
+    client.dueAmount = Math.max(0, (client.totalCost || 0) - (client.amountPaid || 0));
     clients.push(client);
     this.saveClients(clients);
     return client;
@@ -304,6 +307,23 @@ const DB = {
       return client;
     }
     return null;
+  },
+  updateClient(oldPassport, updatedClient) {
+    const clients = this.getClients();
+    const index = clients.findIndex(c => c.passport.toLowerCase() === oldPassport.toLowerCase());
+    if (index !== -1) {
+      updatedClient.updatedAt = new Date().toISOString().split('T')[0];
+      // Ensure dueAmount is correctly calculated
+      updatedClient.dueAmount = Math.max(0, (updatedClient.totalCost || 0) - (updatedClient.amountPaid || 0));
+      clients[index] = updatedClient;
+      this.saveClients(clients);
+      return updatedClient;
+    }
+    return null;
+  },
+  deleteClient(passport) {
+    const clients = this.getClients().filter(c => c.passport.toLowerCase() !== passport.toLowerCase());
+    this.saveClients(clients);
   },
   updateClientStatus(passport, step, msgEn, msgBn) {
     const clients = this.getClients();

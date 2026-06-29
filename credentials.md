@@ -7,8 +7,8 @@ This document lists the default credentials for the Fantastic Overseas Rebranded
 ## 1. Super Administrator Portal
 Used to manage recruitment packages, add/delete agents, edit About/Message descriptions, manage the gallery, and approve new candidate registrations.
 
-* **Login URL (Public):** `https://fantasticoverseas.com/login/admin.html`
-* **Login URL (Local Dev):** `http://localhost:8080/login/admin.html`
+* **Login URL (Public):** `https://fantasticoverseas.com/admin.html`
+* **Login URL (Local Dev):** `http://localhost:8080/admin.html`
 * **Default Credentials:**
   * **Email:** `admin@fantasticoverseas.com`
   * **Password:** `admin`
